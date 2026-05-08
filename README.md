@@ -1,6 +1,6 @@
 # Project Sonic 2 Nick Arcade
 
-Project Sonic 2 Nick Arcade, or Project S2 NA, is a passion project aiming to create a unique Sonic 2 with the familiarity of Sonic Retro's s1disasm, whilst also being compatible with the guides dedicated to both dissasemblies ([s1disasm](https://github.com/sonicretro/s1disasm) and [s2disasm](https://github.com/sonicretro/s2disasm)).
+Project Sonic 2 Nick Arcade, or Project S2 NA, is a passion project aiming to create a unique Sonic 2 Based Engine with the familiarity of Sonic Retro's s1disasm, whilst also being compatible with the guides dedicated to both dissasemblies ([s1disasm](https://github.com/sonicretro/s1disasm) and [s2disasm](https://github.com/sonicretro/s2disasm)).
 
 # Credits
 
