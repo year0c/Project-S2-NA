@@ -222,7 +222,7 @@ loc_A9FA:
 		bsr.w	ObjectMove
 		addi.w	#$18,obVelY(a0)
 		bmi.s	loc_AA34
-		move.b	(Vint_runcount+3).w,d0
+		move.b	(v_vblank_count+3).w,d0
 		add.b	d7,d0
 		andi.b	#3,d0
 		bne.s	loc_AA34

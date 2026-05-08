@@ -27,7 +27,7 @@ Obj7D_Main:
 		add.w	d2,d1
 		cmp.w	d3,d1
 		bhs.s	loc_13804
-		tst.w	(Debug_placement_mode).w
+		tst.w	(v_debuguse).w
 		bne.s	loc_13804
 		tst.b	(f_bigring).w
 		bne.s	loc_13804

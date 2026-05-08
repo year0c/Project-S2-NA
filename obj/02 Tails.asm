@@ -103,8 +103,8 @@ Obj02_ChkInvinc:
 		cmpi.w	#12,(v_air).w
 		blo.s	Obj02_RmvInvin
 		moveq	#0,d0
-		move.b	(Current_Zone).w,d0
-		cmpi.w	#(id_LZ<<8)+3,(Current_ZoneAndAct).w
+		move.b	(v_zone).w,d0
+		cmpi.w	#(id_LZ<<8)+3,(v_zone).w
 		bne.s	loc_10D54
 		moveq	#5,d0
 
@@ -142,7 +142,7 @@ Obj02_ExitChk:
 
 
 Tails_Control:
-		move.b	(v_2Pjpadhold).w,d0
+		move.b	(v_P2jpadhold).w,d0
 		andi.b	#btnUp+btnDn+btnL+btnR+btnABC,d0
 		beq.s	TailsC_NoKeysPressed
 		move.w	#0,(Tails_unused1).w
@@ -223,7 +223,7 @@ loc_10E40:
 		move.w	(Sonic_Pos_Record_Index).w,d0
 		sub.b	d1,d0
 		lea	(Sonic_Stat_Record_Buf).w,a1
-		move.w	(a1,d0.w),(v_2Pjpadhold).w
+		move.w	(a1,d0.w),(v_P2jpadhold).w
 		rts
 
 ; =============== S U B	R O U T	I N E =======================================
@@ -305,12 +305,12 @@ Tails_Move:
 		bne.w	loc_11026
 		tst.w	locktime(a0)
 		bne.w	loc_10FFA
-		btst	#bitL,(v_2Pjpadhold).w
+		btst	#bitL,(v_P2jpadhold).w
 		beq.s	loc_10F3C
 		bsr.w	Tails_MoveLeft
 
 loc_10F3C:
-		btst	#bitR,(v_2Pjpadhold).w
+		btst	#bitR,(v_P2jpadhold).w
 		beq.s	loc_10F48
 		bsr.w	Tails_MoveRight
 
@@ -371,19 +371,19 @@ loc_10FD4:
 ; ---------------------------------------------------------------------------
 
 Tails_LookUp:
-		btst	#bitUp,(v_2Pjpadhold).w
+		btst	#bitUp,(v_P2jpadhold).w
 		beq.s	Tails_Duck
 		move.b	#AniIDTailsAni_LookUp,obAnim(a0)
 		bra.s	loc_10FFA
 ; ---------------------------------------------------------------------------
 
 Tails_Duck:
-		btst	#bitDn,(v_2Pjpadhold).w
+		btst	#bitDn,(v_P2jpadhold).w
 		beq.s	loc_10FFA
 		move.b	#AniIDTailsAni_Duck,obAnim(a0)
 
 loc_10FFA:
-		move.b	(v_2Pjpadhold).w,d0
+		move.b	(v_P2jpadhold).w,d0
 		andi.b	#btnL+btnR,d0
 		bne.s	loc_11026
 		move.w	obInertia(a0),d0
@@ -601,12 +601,12 @@ Tails_RollSpeed:
 		bne.w	loc_11204
 		tst.w	locktime(a0)
 		bne.s	loc_111C0
-		btst	#bitL,(v_2Pjpadhold).w
+		btst	#bitL,(v_P2jpadhold).w
 		beq.s	loc_111B4
 		bsr.w	Tails_RollLeft
 
 loc_111B4:
-		btst	#bitR,(v_2Pjpadhold).w
+		btst	#bitR,(v_P2jpadhold).w
 		beq.s	loc_111C0
 		bsr.w	Tails_RollRight
 
@@ -720,7 +720,7 @@ Tails_ChgJumpDir:
 		btst	#4,obStatus(a0)
 		bne.s	loc_112CA
 		move.w	obVelX(a0),d0
-		btst	#bitL,(v_2Pjpadhold).w
+		btst	#bitL,(v_P2jpadhold).w
 		beq.s	loc_112B0
 		bset	#0,obStatus(a0)
 		sub.w	d5,d0
@@ -731,7 +731,7 @@ Tails_ChgJumpDir:
 		move.w	d1,d0
 
 loc_112B0:
-		btst	#bitR,(v_2Pjpadhold).w
+		btst	#bitR,(v_P2jpadhold).w
 		beq.s	loc_112C6
 		bclr	#0,obStatus(a0)
 		add.w	d5,d0
@@ -830,13 +830,13 @@ loc_1134E:
 		; will access a dangling pointer!
 		movea.l	a0,a2
 	endif
-		cmpi.w	#(id_SBZ<<8)+1,(Current_ZoneAndAct).w
+		cmpi.w	#(id_SBZ<<8)+1,(v_zone).w
 		bne.w	JmpTo2_KillCharacter
 		cmpi.w	#$2000,obX(a0)
 		blo.w	JmpTo2_KillCharacter
 		clr.b	(v_lastlamp).w
-		move.w	#1,(Level_Inactive_flag).w
-		move.w	#(id_LZ<<8)+3,(Current_ZoneAndAct).w
+		move.w	#1,(f_restart).w
+		move.w	#(id_LZ<<8)+3,(v_zone).w
 		rts
 ; ---------------------------------------------------------------------------
 
@@ -862,10 +862,10 @@ Tails_Roll:
 loc_1139A:
 		cmpi.w	#$80,d0
 		blo.s	locret_113B2
-		move.b	(v_2Pjpadhold).w,d0
+		move.b	(v_P2jpadhold).w,d0
 		andi.b	#btnL+btnR,d0
 		bne.s	locret_113B2
-		btst	#bitDn,(v_2Pjpadhold).w
+		btst	#bitDn,(v_P2jpadhold).w
 		bne.s	loc_113B4
 
 locret_113B2:
@@ -899,7 +899,7 @@ locret_113F0:
 
 
 Tails_Jump:
-		move.b	(v_2Pjpadpress).w,d0
+		move.b	(v_P2jpadhold).w,d0
 		andi.b	#btnABC,d0
 		beq.w	locret_11496
 		moveq	#0,d0
@@ -965,7 +965,7 @@ Tails_JumpHeight:
 loc_114B6:
 		cmp.w	obVelY(a0),d1
 		ble.s	locret_114CA
-		move.b	(v_2Pjpadhold).w,d0
+		move.b	(v_P2jpadhold).w,d0
 		andi.b	#btnABC,d0
 		bne.s	locret_114CA
 		move.w	d1,obVelY(a0)
@@ -992,7 +992,7 @@ Tails_Spindash:
 		bne.s	loc_11510
 		cmpi.b	#AniIDTailsAni_Duck,obAnim(a0)
 		bne.s	locret_1150E
-		move.b	(v_2Pjpadpress).w,d0
+		move.b	(v_P2jpadhold).w,d0
 		andi.b	#btnABC,d0
 		beq.w	locret_1150E
 		move.b	#AniIDTailsAni_Spindash,obAnim(a0)
@@ -1006,7 +1006,7 @@ locret_1150E:
 ; ---------------------------------------------------------------------------
 
 loc_11510:
-		move.b	(v_2Pjpadhold).w,d0
+		move.b	(v_P2jpadhold).w,d0
 		btst	#bitDn,d0
 		bne.s	loc_11556
 		move.b	#14,obHeight(a0)
@@ -1035,7 +1035,7 @@ loc_1154E:
 ; ---------------------------------------------------------------------------
 
 loc_11556:
-		move.b	(v_2Pjpadpress).w,d0
+		move.b	(v_P2jpadhold).w,d0
 		andi.b	#btnABC,d0
 		beq.w	loc_11564
 		nop
@@ -1211,10 +1211,10 @@ Tails_Floor:
 	if FixBugs
 		; The original code fails to initate this check.
 		; This bug fix was applied to Sonic 2 as of August 21st, 1992.
-		move.l	#v_colladdr1,(Collision_addr).w
+		move.l	#v_collision1,(v_collindex).w
 		cmpi.b	#$C,top_solid_bit(a0)
 		beq.s	.col1
-		move.l	#v_colladdr2,(Collision_addr).w
+		move.l	#v_collision2,(v_collindex).w
 
 .col1:
 	endif
@@ -1547,7 +1547,7 @@ Obj02_ResetLevel:
 		beq.s	locret_1199A
 		subq.w	#1,restartime(a0)
 		bne.s	locret_1199A
-		move.w	#1,(Level_Inactive_flag).w
+		move.w	#1,(f_restart).w
 
 locret_1199A:
 		rts
@@ -1922,28 +1922,22 @@ TailsAni_Float3:	dc.b   3,  1,  2,  3,  4,  5,  6,  7,  8,$FF
 TailsAni_Float4:	dc.b   3,  1,  2,  3,  4,  5,  6,  7,  8,$FF
 		even
 
-; ===========================================================================
 ; ---------------------------------------------------------------------------
 ; Tails' Tails pattern loading subroutine
 ; ---------------------------------------------------------------------------
 
 ; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
 
-; LoadTailsDynPLC_F600:
+; loc_1D184:
 LoadTailsTailsDynPLC:
-		moveq	#0,d0
-		move.b	obFrame(a0),d0
-		cmp.b	(TailsTails_LastLoadedDPLC).w,d0
-		beq.s	locret_11D7C
-		move.b	d0,(TailsTails_LastLoadedDPLC).w
-		lea	(TailsDynPLC).l,a2
-		add.w	d0,d0
-		adda.w	(a2,d0.w),a2
-		move.w	(a2)+,d5
-		subq.w	#1,d5
-		bmi.s	locret_11D7C
-		move.w	#tiles_to_bytes(ArtTile_TailsTails),d4
-		bra.s	TPLC_ReadEntry
+	move.b	obFrame(a0),d0		; get Tails' Tails' current frame
+	cmp.b	(v_tlstlsframenum).w,d0	; has the frame changed?
+	beq.s	return_1D1FE			; if not, nothing to do
+	move.b	d0,(v_tlstlsframenum).w	; update cached frame number
+	lea	(TailsDynPLC).l,a2		; load Tails' Tails DPLC table
+	move.w	#tiles_to_bytes(ArtTile_TailsTails),d4	; starting VRAM tile
+	move.l	#Art_Tails,d6		; base Tails' Tails art pointer
+	jmp	(LoadDynPLC).l			; load DPLC
 ; End of function LoadTailsTailsDynPLC
 
 ; ---------------------------------------------------------------------------
@@ -1952,37 +1946,19 @@ LoadTailsTailsDynPLC:
 
 ; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
 
-
+; loc_1D1AC:
 LoadTailsDynPLC:
-		moveq	#0,d0
-		move.b	obFrame(a0),d0
-		cmp.b	(Tails_LastLoadedDPLC).w,d0
-		beq.s	locret_11D7C
-		move.b	d0,(Tails_LastLoadedDPLC).w
-		lea	(TailsDynPLC).l,a2
-		add.w	d0,d0
-		adda.w	(a2,d0.w),a2
-		move.w	(a2)+,d5
-		subq.w	#1,d5
-		bmi.s	locret_11D7C
-		move.w	#tiles_to_bytes(ArtTile_Tails),d4
-; loc_11D50:
-TPLC_ReadEntry:
-		moveq	#0,d1
-		move.w	(a2)+,d1
-		move.w	d1,d3
-		lsr.w	#8,d3
-		andi.w	#$F0,d3
-		addi.w	#$10,d3
-		andi.w	#$FFF,d1
-		lsl.l	#5,d1
-		addi.l	#Art_Tails,d1
-		move.w	d4,d2
-		add.w	d3,d4
-		add.w	d3,d4
-		jsr	(QueueDMATransfer).l
-		dbf	d5,TPLC_ReadEntry
+	move.b	obFrame(a0),d0		; get Tails's current frame
+; loc_1D1B2:
+LoadTailsDynPLC_Part2:
+	cmp.b	(v_tlsframenum).w,d0	; has the frame changed?
+	beq.s	return_1D1FE			; if not, nothing to do
+	move.b	d0,(v_tlsframenum).w	; update cached frame number
+	lea	(TailsDynPLC).l,a2		; load Tails DPLC table
+	move.w	#tiles_to_bytes(ArtTile_Tails),d4	; starting VRAM tile
+	move.l	#Art_Tails,d6		; base Tails art pointer
+	jmp	(LoadDynPLC).l			; load DPLC
 
-locret_11D7C:
-		rts
+return_1D1FE:
+	rts					; return
 ; End of function LoadTailsDynPLC

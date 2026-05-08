@@ -29,12 +29,12 @@ loc_4490:
 		andi.w	#$3FF,(Demo_button_index).w
 
 loc_44A4:
-		cmpi.b	#id_EHZ,(Current_Zone).w		; are we on Emerald Hill?
+		cmpi.b	#id_EHZ,(v_zone).w		; are we on Emerald Hill?
 		bne.s	locret_44E2			; if not, branch
 		lea	(RAM_debug_demo_record_2P).l,a1
 		move.w	(Demo_button_index_2P).w,d0
 		adda.w	d0,a1
-		move.b	(v_2Pjpadhold).w,d0
+		move.b	(v_P2jpadhold).w,d0
 		cmp.b	(a1),d0
 		bne.s	loc_44CE
 		addq.b	#1,1(a1)
@@ -63,7 +63,7 @@ MoveDemo_On:
 .dontquit:
 		lea	(Demo_Index).l,a1
 		moveq	#0,d0
-		move.b	(Current_Zone).w,d0
+		move.b	(v_zone).w,d0
 		cmpi.b	#GameModeID_SpecialStage,(v_gamemode).w
 		bne.s	.notspecial
 		moveq	#6,d0
@@ -93,13 +93,13 @@ MoveDemo_On:
 		addq.w	#2,(Demo_button_index).w
 
 .demo2P:
-		cmpi.b	#id_EHZ,(Current_Zone).w
+		cmpi.b	#id_EHZ,(v_zone).w
 		bne.s	.notEHZ
 		lea	(Demo_EHZ_2P).l,a1
 		move.w	(Demo_button_index_2P).w,d0
 		adda.w	d0,a1
 		move.b	(a1),d0
-		lea	(v_2Pjpadhold).w,a0
+		lea	(v_P2jpadhold).w,a0
 		move.b	d0,d1
 	if FixBugs
 		; Fix demo playback
@@ -122,7 +122,7 @@ MoveDemo_On:
 ; ---------------------------------------------------------------------------
 
 .notEHZ:
-		move.w	#0,(v_2Pjpadhold).w
+		move.w	#0,(v_P2jpadhold).w
 		rts
 ; End of function MoveSonicInDemo
 

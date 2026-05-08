@@ -28,7 +28,7 @@ Obj04_Main:
 		bne.s	loc_15530
 	if FixBugs
 		move.b	(v_jpadpress1).w,d0 ; is Start button pressed?
-		or.b	(v_2Pjpadpress).w,d0 ; (either player)
+		or.b	(v_P2jpadhold).w,d0 ; (either player)
 		andi.b	#btnStart,d0
 	else
 		; This only checks player 1, causing the water to look weird if

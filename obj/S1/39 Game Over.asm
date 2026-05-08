@@ -81,7 +81,7 @@ loc_BB1E:
 
 loc_BB38:
 		clr.l	(v_lamp_time).w
-		move.w	#1,(Level_Inactive_flag).w
+		move.w	#1,(f_restart).w
 
 loc_BB42:
 		bra.w	DisplaySprite

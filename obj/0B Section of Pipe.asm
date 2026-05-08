@@ -41,7 +41,7 @@ loc_141C8:
 		move.b	d0,obj0B_delay(a0)
 
 loc_1421C:
-		move.b	(Vint_runcount+3).w,d0
+		move.b	(v_vblank_count+3).w,d0
 		add.b	obj0B_delay(a0),d0
 		bne.s	loc_14254
 		addq.b	#2,obRoutine(a0)

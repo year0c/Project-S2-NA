@@ -20,14 +20,14 @@ card_finalX = objoff_32		; position for card to finish on
 Obj34_CheckLZ4:
 		movea.l	a0,a1
 		moveq	#0,d0
-		move.b	(Current_Zone).w,d0
-		cmpi.w	#(id_LZ<<8)+3,(Current_ZoneAndAct).w
+		move.b	(v_zone).w,d0
+		cmpi.w	#(id_LZ<<8)+3,(v_zone).w
 		bne.s	Obj34_CheckFZ
 		moveq	#5,d0
 
 Obj34_CheckFZ:
 		move.w	d0,d2
-		cmpi.w	#(id_SBZ<<8)+2,(Current_ZoneAndAct).w
+		cmpi.w	#(id_SBZ<<8)+2,(v_zone).w
 		bne.s	Obj34_CheckConfig
 		moveq	#6,d0
 		moveq	#$B,d2
@@ -53,8 +53,8 @@ Obj34_Loop:
 Obj34_ActNumber:
 		cmpi.b	#7,d0
 		bne.s	Obj34_MakeSprite
-		add.b	(Current_Act).w,d0
-		cmpi.b	#3,(Current_Act).w
+		add.b	(v_act).w,d0
+		cmpi.b	#3,(v_act).w
 		bne.s	Obj34_MakeSprite
 		subq.b	#1,d0
 
@@ -135,7 +135,7 @@ Obj34_ChangeArt:
 		moveq	#plcid_Explode,d0
 		jsr	(LoadPLC).l
 		moveq	#0,d0
-		move.b	(Current_Zone).w,d0
+		move.b	(v_zone).w,d0
 		addi.w	#plcid_GHZAnimals,d0
 		jsr	(LoadPLC).l
 

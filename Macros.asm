@@ -1,9 +1,4 @@
 ; ---------------------------------------------------------------------------
-; I run the main 68k RAM addresses through this function
-; to let them work in both 16-bit and 32-bit addressing modes.
-ramaddr function x,-(-x)&$FFFFFFFF
-
-; ---------------------------------------------------------------------------
 ; Set a VRAM address via the VDP control port.
 ; input: 16-bit VRAM address, control port (default is (vdp_control_port).l)
 ; ---------------------------------------------------------------------------
@@ -99,30 +94,30 @@ start:
 zoneanimcount := zoneanimcount + 1
 	endm
 
-; fills a region of 68k RAM with 0
-clearRAM macro startaddr,endaddr
-	if startaddr>endaddr
-		fatal "Starting address of clearRAM \{startaddr} is after ending address \{endaddr}."
-	elseif startaddr==endaddr
-		warning "clearRAM is clearing zero bytes. Turning this into a nop instead."
-		exitm
-	endif
-	if ((startaddr)&$8000)==0
-		lea	(startaddr).l,a1
+; ---------------------------------------------------------------------------
+; Fill portion of RAM with 0
+; input: start, end
+; ---------------------------------------------------------------------------
+
+clearRAM:	macro startAddress,endAddress
+	if "endAddress"<>""
+		.length: := (endAddress)-(startAddress)
 	else
-		lea	(startaddr).w,a1
+		.length: := startAddress_end-startAddress
 	endif
+		lea	(startAddress).w,a1
 		moveq	#0,d0
-	if ((startaddr)&1)
-		move.b	d0,(a1)+
-	endif
-		move.w	#bytesToLcnt((endaddr-startaddr) - ((startaddr)&1)),d1
-.loop:		move.l	d0,(a1)+
+		move.w	#.length/4-1,d1
+
+.loop:
+		move.l	d0,(a1)+
 		dbf	d1,.loop
-	if (((endaddr-startaddr) - ((startaddr)&1))&2)
+
+	if (endAddress-startAddress)&2
 		move.w	d0,(a1)+
 	endif
-	if (((endaddr-startaddr) - ((startaddr)&1))&1)
+
+	if (endAddress-startAddress)&1
 		move.b	d0,(a1)+
 	endif
 		endm

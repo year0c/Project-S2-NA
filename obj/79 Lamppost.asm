@@ -45,7 +45,7 @@ loc_13536:
 ; ---------------------------------------------------------------------------
 
 Obj79_Main:
-		tst.w	(Debug_placement_mode).w
+		tst.w	(v_debuguse).w
 		bne.w	locret_135CA
 		tst.b	(f_playerctrl).w
 		bmi.w	locret_135CA
@@ -88,7 +88,7 @@ locret_135CA:
 ; ---------------------------------------------------------------------------
 
 Obj79_AfterHit:
-		move.b	(Vint_runcount+3).w,d0
+		move.b	(v_vblank_count+3).w,d0
 		andi.b	#2,d0
 		lsr.b	#1,d0
 		addq.b	#1,d0
@@ -149,7 +149,7 @@ Lamppost_LoadInfo:
 		move.w	(v_lamp_bg2scry).w,(Camera_BG2_Y_pos).w
 		move.w	(v_lamp_bg3scrx).w,(Camera_BG3_X_pos).w
 		move.w	(v_lamp_bg3scry).w,(Camera_BG3_Y_pos).w
-		cmpi.b	#id_LZ,(Current_Zone).w
+		cmpi.b	#id_LZ,(v_zone).w
 		bne.s	loc_136F0
 		move.w	(v_lamp_wtrpos).w,(v_waterpos2).w
 		move.b	(v_lamp_wtrrout).w,(v_wtr_routine).w

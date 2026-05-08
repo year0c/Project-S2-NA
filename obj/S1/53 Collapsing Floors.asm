@@ -15,13 +15,13 @@ loc_8D6A:
 		addq.b	#2,obRoutine(a0)
 		move.l	#Map_S1Obj53,obMap(a0)
 		move.w	#make_art_tile(ArtTile_MZ_Block,2,0),obGfx(a0)
-		cmpi.b	#id_SLZ,(Current_Zone).w
+		cmpi.b	#id_SLZ,(v_zone).w
 		bne.s	loc_8D8E
 		move.w	#make_art_tile(ArtTile_SLZ_Collapsing_Floor,2,0),obGfx(a0)
 		addq.b	#2,obFrame(a0)
 
 loc_8D8E:
-		cmpi.b	#id_SBZ,(Current_Zone).w
+		cmpi.b	#id_SBZ,(v_zone).w
 		bne.s	loc_8D9C
 		move.w	#make_art_tile(ArtTile_SBZ_Collapsing_Floor,2,0),obGfx(a0)
 

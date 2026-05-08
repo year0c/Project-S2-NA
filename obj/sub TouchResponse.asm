@@ -316,7 +316,7 @@ HurtSonic:
 ; ---------------------------------------------------------------------------
 
 .norings:
-		tst.w	(Debug_mode_flag).w
+		tst.w	(f_debugmode).w
 		bne.w	.hasshield
 ; End of function HurtSonic
 
@@ -325,7 +325,7 @@ HurtSonic:
 
 
 KillCharacter:
-		tst.w	(Debug_placement_mode).w
+		tst.w	(v_debuguse).w
 		bne.s	Kill_NoDeath
 		move.b	#0,(v_invinc).w
 		move.b	#6,obRoutine(a0)

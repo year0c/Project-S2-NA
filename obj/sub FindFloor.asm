@@ -33,7 +33,7 @@ FindFloor:
 ; ===========================================================================
 
 .issolid:
-		movea.l	(Collision_addr).w,a2
+		movea.l	(v_collindex).w,a2
 		add.w	d0,d0
 		move.w	(a2,d0.w),d0	; get collision block number
 		beq.s	.isblank	; branch if 0
@@ -112,7 +112,7 @@ FindFloor2:
 ; ===========================================================================
 
 .issolid:
-		movea.l	(Collision_addr).w,a2
+		movea.l	(v_collindex).w,a2
 		add.w	d0,d0
 		move.w	(a2,d0.w),d0
 		beq.s	.isblank2

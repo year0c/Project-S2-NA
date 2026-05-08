@@ -114,7 +114,7 @@ loc_9C00:
 		bsr.w	RandomNumber
 		andi.w	#1,d0
 		moveq	#0,d1
-		move.b	(Current_Zone).w,d1
+		move.b	(v_zone).w,d1
 		add.w	d1,d1
 		add.w	d0,d1
 		lea	byte_9AE0(pc),a1
@@ -181,7 +181,7 @@ loc_9CB8:
 		move.b	d0,obRoutine(a0)
 		tst.b	(v_bossstatus).w
 		beq.s	loc_9D0E
-		btst	#4,(Vint_runcount+3).w
+		btst	#4,(v_vblank_count+3).w
 		beq.s	loc_9D0E
 		neg.w	obVelX(a0)
 		bchg	#0,obRender(a0)

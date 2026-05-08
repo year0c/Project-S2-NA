@@ -6,7 +6,7 @@
 
 DebugMode_PB:
 		moveq	#0,d0
-		move.b	(Debug_placement_mode).w,d0
+		move.b	(v_debuguse).w,d0
 		move.w	DebugIndex_PB(pc,d0.w),d1
 		jmp	DebugIndex_PB(pc,d1.w)
 ; ===========================================================================
@@ -14,7 +14,7 @@ DebugIndex_PB:	dc.w Debug_Init_PB-DebugIndex_PB
 		dc.w Debug_Main_PB-DebugIndex_PB
 ; ===========================================================================
 Debug_Init_PB:
-		addq.b	#2,(Debug_placement_mode).w
+		addq.b	#2,(v_debuguse).w
 		move.w	(Camera_Min_Y_pos).w,(v_limittopdb).w
 		move.w	(Camera_Max_Y_pos_target).w,(v_limitbtmdb).w
 		move.w	#0,(Camera_Min_Y_pos).w
@@ -34,21 +34,21 @@ Debug_Init_PB:
 
 .loc_1BB04:
 		moveq	#0,d0
-		move.b	(Current_Zone).w,d0
+		move.b	(v_zone).w,d0
 
 .loc_1BB0A:
 		lea	(DebugList_PB).l,a2
 		add.w	d0,d0
 		adda.w	(a2,d0.w),a2
 		move.w	(a2)+,d6
-		cmp.b	(Debug_object).w,d6
+		cmp.b	(v_debugitem).w,d6
 		bhi.s	.loc_1BB24
-		move.b	#0,(Debug_object).w
+		move.b	#0,(v_debugitem).w
 
 .loc_1BB24:
 		bsr.w	LoadDebugObjectSprite_PB
-		move.b	#12,(Debug_Accel_Timer).w
-		move.b	#1,(Debug_Speed).w
+		move.b	#12,(v_debugspeedtimer).w
+		move.b	#1,(v_debugspeed).w
 
 Debug_Main_PB:
 		moveq	#6,d0				; force zone 6's debug object list (was the ending in S1)
@@ -56,7 +56,7 @@ Debug_Main_PB:
 		beq.s	.loc_1BB44			; if yes, branch
 
 		moveq	#0,d0
-		move.b	(Current_Zone).w,d0
+		move.b	(v_zone).w,d0
 
 .loc_1BB44:
 		lea	(DebugList_PB).l,a2
@@ -78,25 +78,25 @@ Debug_Control_PB:
 		move.b	(v_jpadhold1).w,d0
 		andi.w	#btnUp+btnDn+btnL+btnR,d0
 		bne.s	Debug_ContinueMoving_PB
-		move.b	#12,(Debug_Accel_Timer).w
-		move.b	#15,(Debug_Speed).w
+		move.b	#12,(v_debugspeedtimer).w
+		move.b	#15,(v_debugspeed).w
 		bra.w	Debug_ControlObjects_PB
 ; ===========================================================================
 ; loc_1BB86:
 Debug_ContinueMoving_PB:
-		subq.b	#1,(Debug_Accel_Timer).w
+		subq.b	#1,(v_debugspeedtimer).w
 		bne.s	Debug_TimerNotOver_PB
-		move.b	#1,(Debug_Accel_Timer).w
-		addq.b	#1,(Debug_Speed).w
+		move.b	#1,(v_debugspeedtimer).w
+		addq.b	#1,(v_debugspeed).w
 		bne.s	Debug_Move_PB
-		move.b	#-1,(Debug_Speed).w
+		move.b	#-1,(v_debugspeed).w
 ; loc_1BB9E:
 Debug_Move_PB:
 		move.b	(v_jpadhold1).w,d4
 ; loc_1BBA2:
 Debug_TimerNotOver_PB:
 		moveq	#0,d1
-		move.b	(Debug_Speed).w,d1
+		move.b	(v_debugspeed).w,d1
 		addq.w	#1,d1
 		swap	d1
 		asr.l	#4,d1
@@ -143,19 +143,19 @@ Debug_ControlObjects_PB:
 		btst	#bitC,(v_jpadpress1).w
 		beq.s	Debug_CycleObjects_PB
 		; cycle backwards through the object list
-		subq.b	#1,(Debug_object).w
+		subq.b	#1,(v_debugitem).w
 		bhs.s	Debug_CycleObjects_PB.loc_1BC28
-		add.b	d6,(Debug_object).w
+		add.b	d6,(v_debugitem).w
 		bra.s	Debug_CycleObjects_PB.loc_1BC28
 ; ===========================================================================
 ; loc_1BC10:
 Debug_CycleObjects_PB:
 		btst	#bitA,(v_jpadpress1).w
 		beq.s	Debug_SpawnObject_PB
-		addq.b	#1,(Debug_object).w
-		cmp.b	(Debug_object).w,d6
+		addq.b	#1,(v_debugitem).w
+		cmp.b	(v_debugitem).w,d6
 		bhi.s	.loc_1BC28
-		move.b	#0,(Debug_object).w
+		move.b	#0,(v_debugitem).w
 
 .loc_1BC28:
 		bra.w	LoadDebugObjectSprite_PB
@@ -174,7 +174,7 @@ Debug_SpawnObject_PB:
 		move.b	obRender(a0),obStatus(a1)
 		andi.b	#$7F,obStatus(a1)
 		moveq	#0,d0
-		move.b	(Debug_object).w,d0
+		move.b	(v_debugitem).w,d0
 		lsl.w	#3,d0
 		move.b	4(a2,d0.w),obSubtype(a1)
 		rts
@@ -185,7 +185,7 @@ Debug_ExitDebugMode_PB:
 		beq.s	.locret_1BCCA
 		; exit Debug Mode
 		moveq	#0,d0
-		move.w	d0,(Debug_placement_mode).w
+		move.w	d0,(v_debuguse).w
 		move.l	#$914C0,(v_player+obMap).w	;	Map_Sonic
 		move.w	#make_art_tile(ArtTile_Sonic,0,0),(v_player+obGfx).w
 		tst.w	(Two_player_mode).w
@@ -215,7 +215,7 @@ Debug_ExitDebugMode_PB:
 ; loc_1BCCC: Debug_ShowItem:
 LoadDebugObjectSprite_PB:
 		moveq	#0,d0
-		move.b	(Debug_object).w,d0
+		move.b	(v_debugitem).w,d0
 		lsl.w	#3,d0
 		move.l	(a2,d0.w),obMap(a0)
 		move.w	6(a2,d0.w),obGfx(a0)

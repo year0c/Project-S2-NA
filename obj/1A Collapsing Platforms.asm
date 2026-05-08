@@ -18,7 +18,7 @@ loc_8C58:
 		move.b	#4,obPriority(a0)
 		move.b	#7,objoff_38(a0)
 		move.b	obSubtype(a0),obFrame(a0)
-		cmpi.b	#id_HPZ,(Current_Zone).w
+		cmpi.b	#id_HPZ,(v_zone).w
 		bne.s	loc_8CB0
 		move.l	#Map_Obj1A_HPZ,obMap(a0)
 		move.w	#make_art_tile(ArtTile_HPZ_Platform,2,0),obGfx(a0)

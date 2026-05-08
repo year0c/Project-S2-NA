@@ -63,7 +63,7 @@ loc_1436E:
 ; ---------------------------------------------------------------------------
 
 loc_1438C:
-		move.w	(Vint_runcount+2).w,d1
+		move.w	(v_vblank_count+2).w,d1
 		andi.w	#$3FF,d1
 		bne.s	loc_143A0
 		move.b	#1,objoff_3D(a0)

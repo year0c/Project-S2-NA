@@ -4,7 +4,7 @@
 ; ---------------------------------------------------------------------------
 
 Obj09_PB:
-		tst.w	(Debug_placement_mode).w
+		tst.w	(v_debuguse).w
 		beq.s	Obj09_Normal_PB
 		bsr.w	S1SS_FixCamera_PB
 		bra.w	$1B1A2	;	DebugMode
@@ -36,11 +36,11 @@ Obj09_Index_PB:	dc.w .loc_1A3DC-Obj09_Index_PB
 		bset	#1,obStatus(a0)
 
 .loc_1A41C:
-		tst.w	(Debug_mode_flag).w
+		tst.w	(f_debugmode).w
 		beq.s	.loc_1A430
 		btst	#bitB,(v_jpadpress1).w
 		beq.s	.loc_1A430
-		move.w	#1,(Debug_placement_mode).w
+		move.w	#1,(v_debuguse).w
 
 .loc_1A430:
 		move.b	#0,objoff_30(a0)

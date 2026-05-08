@@ -4,7 +4,7 @@
 PalCycle_Load:
 		moveq	#0,d2
 		moveq	#0,d0
-		move.b	(Current_Zone).w,d0
+		move.b	(v_zone).w,d0
 		add.w	d0,d0
 		move.w	PalCycle(pc,d0.w),d0
 		jmp	PalCycle(pc,d0.w)

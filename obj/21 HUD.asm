@@ -27,7 +27,7 @@ Obj21_Main:
 		tst.w	(v_rings).w
 		beq.s	Obj21_NoRings
 		moveq	#0,d0
-		btst	#3,(Timer_frames+1).w
+		btst	#3,(v_framecount+1).w
 		bne.s	Obj21_Display
 		cmpi.b	#9,(v_timemin).w
 		bne.s	Obj21_Display
@@ -40,7 +40,7 @@ Obj21_Display:
 ; loc_1B08C:
 Obj21_NoRings:
 		moveq	#0,d0
-		btst	#3,(Timer_frames+1).w
+		btst	#3,(v_framecount+1).w
 		bne.s	Obj21_Display2
 		addq.w	#1,d0
 		cmpi.b	#9,(v_timemin).w

@@ -108,7 +108,7 @@ loc_BE6A:
 		subi.w	#10,(v_ringbonus).w
 		moveq	#10,d0
 		jsr	(AddPoints).l
-		move.b	(Vint_runcount+3).w,d0
+		move.b	(v_vblank_count+3).w,d0
 		andi.b	#3,d0
 		bne.s	locret_BEC2
 		move.w	#sfx_Switch,d0
@@ -130,7 +130,7 @@ locret_BEC2:
 ; ---------------------------------------------------------------------------
 
 loc_BEC4:
-		move.w	#1,(Level_Inactive_flag).w
+		move.w	#1,(f_restart).w
 		bra.w	DisplaySprite
 ; ---------------------------------------------------------------------------
 
@@ -145,7 +145,7 @@ loc_BECE:
 ; ---------------------------------------------------------------------------
 
 loc_BEF2:
-		move.b	(Vint_runcount+3).w,d0
+		move.b	(v_vblank_count+3).w,d0
 		andi.b	#$F,d0
 		bne.s	loc_BF02
 		bchg	#0,obFrame(a0)

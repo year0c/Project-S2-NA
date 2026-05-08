@@ -161,9 +161,9 @@ loc_17A3C:
 		addq.w	#2,obX(a0)
 		cmpi.w	#$2B08,obX(a0)
 		blo.s	locret_17A68
-		tst.b	(Boss_defeated_flag).w
+		tst.b	(v_bossstatus).w
 		bne.s	locret_17A68
-		move.b	#1,(Boss_defeated_flag).w
+		move.b	#1,(v_bossstatus).w
 		jmpto	JmpTo9_DeleteObject
 ; ---------------------------------------------------------------------------
 

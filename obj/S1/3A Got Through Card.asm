@@ -41,7 +41,7 @@ Obj3A_Init:
 		move.b	(a2)+,d0
 		cmpi.b	#6,d0
 		bne.s	loc_BB94
-		add.b	(Current_Act).w,d0
+		add.b	(v_act).w,d0
 
 loc_BB94:
 		move.b	d0,obFrame(a1)
@@ -121,7 +121,7 @@ Obj3A_ChkBonus:
 		move.w	#sfx_Cash,d0
 		jsr	(QueueSound2).l
 		addq.b	#2,obRoutine(a0)
-		cmpi.w	#(id_SBZ<<8)+1,(Current_ZoneAndAct).w
+		cmpi.w	#(id_SBZ<<8)+1,(v_zone).w
 		bne.s	Obj3A_SetDelay
 		addq.b	#4,obRoutine(a0)
 ; loc_BC5E:
@@ -134,7 +134,7 @@ locret_BC64:
 ; loc_BC66:
 Obj3A_AddBonus:
 		jsr	(AddPoints).l
-		move.b	(Vint_runcount+3).w,d0
+		move.b	(v_vblank_count+3).w,d0
 		andi.b	#3,d0
 		bne.s	locret_BC64
 		move.w	#sfx_Switch,d0
@@ -142,15 +142,15 @@ Obj3A_AddBonus:
 ; ===========================================================================
 ; loc_BC80:
 Obj3A_NextLevel:
-		move.b	(Current_Zone).w,d0
+		move.b	(v_zone).w,d0
 		andi.w	#7,d0
 		lsl.w	#3,d0
-		move.b	(Current_Act).w,d1
+		move.b	(v_act).w,d1
 		andi.w	#3,d1
 		add.w	d1,d1
 		add.w	d1,d0
 		move.w	LevelOrder(pc,d0.w),d0
-		move.w	d0,(Current_ZoneAndAct).w
+		move.w	d0,(v_zone).w
 		tst.w	d0
 		bne.s	Obj3A_ChkSS
 		move.b	#GameModeID_SegaScreen,(v_gamemode).w
@@ -166,7 +166,7 @@ Obj3A_ChkSS:
 ; ===========================================================================
 
 loc_BCBC:
-		move.w	#1,(Level_Inactive_flag).w
+		move.w	#1,(f_restart).w
 
 locret_BCC2:
 ; remove the rts below to restore the display code from Sonic 1.

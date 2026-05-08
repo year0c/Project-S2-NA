@@ -102,7 +102,7 @@ Obj0D_RingSparklePositions:
 ; ===========================================================================
 ; loc_F0C4:
 Obj0D_EndLevel:
-		tst.w	(Debug_placement_mode).w
+		tst.w	(v_debuguse).w
 		bne.w	locret_F15E
 	if FixBugs
 		; This function's checks are a mess, creating an edgecase where it's

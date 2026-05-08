@@ -51,7 +51,7 @@ loc_5B2A:
 		move.w	(Camera_Y_pos).w,(v_scrposy_vdp).w
 		move.w	(Camera_BG_Y_pos).w,(v_bgscrposy_vdp).w
 		moveq	#0,d0
-		move.b	(Current_Zone).w,d0
+		move.b	(v_zone).w,d0
 		add.w	d0,d0
 		move.w	Deform_Index(pc,d0.w),d0
 		jmp	Deform_Index(pc,d0.w)
@@ -600,7 +600,7 @@ loc_60FA:
 		dbf	d1,loc_60FA
 
 		move.w	d0,d3
-		move.b	(Vint_runcount+3).w,d1
+		move.b	(v_vblank_count+3).w,d1
 		andi.w	#7,d1
 		bne.s	loc_6110
 		subq.w	#1,(v_bgscroll_buffer).w
@@ -722,7 +722,7 @@ Deform_EHZ_Data:
 ; ---------------------------------------------------------------------------
 
 Deform_EHZ_2P:
-		move.b	(Vint_runcount+3).w,d1
+		move.b	(v_vblank_count+3).w,d1
 		andi.w	#7,d1
 		bne.s	loc_621C
 		subq.w	#1,(v_bgscroll_buffer).w

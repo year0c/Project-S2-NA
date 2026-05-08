@@ -30,9 +30,9 @@ loc_882C:
 		move.b	(a2)+,obFrame(a0)
 		move.w	#make_art_tile(ArtTile_Level,2,0),obGfx(a0)
 		move.l	#Map_Obj18_GHZ,obMap(a0)
-		cmpi.b	#id_EHZ,(Current_Zone).w
+		cmpi.b	#id_EHZ,(v_zone).w
 		beq.s	loc_8866
-		cmpi.b	#id_HTZ,(Current_Zone).w
+		cmpi.b	#id_HTZ,(v_zone).w
 		bne.s	loc_8874
 
 loc_8866:

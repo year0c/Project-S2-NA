@@ -4,7 +4,7 @@
 HudUpdate_PB:
 		nop
 		lea	(vdp_data_port).l,a6
-		tst.w	(Debug_mode_flag).w
+		tst.w	(f_debugmode).w
 		bne.w	S1TimeOver_PB.loc_1B330
 		tst.b	(f_scorecount).w
 		beq.s	.loc_1B266
@@ -212,12 +212,12 @@ HUD_TilesBase_PB_End:
 HUDDebug_XY_PB:
 		locVRAM	(ArtTile_HUD+$18)*tile_size		; set VRAM address
 		move.w	(Camera_X_pos).w,d1
-		move.w	(v_objstate_debug).w,d1
+		move.w	(v_objstate).w,d1
 		swap	d1
 		move.w	(v_player+obX).w,d1
 		bsr.s	HUDDebug_XY2_PB
 		move.w	(Camera_Y_pos).w,d1
-		move.w	(Obj_respawn_index_P2_debug).w,d1
+		move.w	(Obj_respawn_index_P2).w,d1
 		swap	d1
 		move.w	(v_player+obY).w,d1
 ; End of function HUDDebug_XY

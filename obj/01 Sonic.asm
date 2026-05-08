@@ -4,7 +4,7 @@
 ; ---------------------------------------------------------------------------
 
 Obj01:
-		tst.w	(Debug_placement_mode).w	; is debug mode being used?
+		tst.w	(v_debuguse).w	; is debug mode being used?
 		beq.s	Obj01_Normal			; if not, branch
 		jmp	(DebugMode).l
 ; ===========================================================================
@@ -52,11 +52,11 @@ loc_FA88:
 ; ---------------------------------------------------------------------------
 
 Obj01_Control:
-		tst.w	(Debug_mode_flag).w		; is debug cheat enabled?
+		tst.w	(f_debugmode).w		; is debug cheat enabled?
 		beq.s	loc_FAB0			; if not, branch
 		btst	#bitB,(v_jpadpress1).w		; is button B pressed?
 		beq.s	loc_FAB0			; if not, branch
-		move.w	#1,(Debug_placement_mode).w	; change Sonic into ring/item
+		move.w	#1,(v_debuguse).w	; change Sonic into ring/item
 		clr.b	(f_lockctrl).w			; unlock control
 		rts
 ; -----------------------------------------------------------------------
@@ -142,8 +142,8 @@ Obj01_ChkInvin:						; Checks if invincibility has expired and (should) disables
 		cmpi.w	#12,(v_air).w
 		blo.s	Obj01_RmvInvin
 		moveq	#0,d0
-		move.b	(Current_Zone).w,d0
-		cmpi.w	#(id_LZ<<8)+3,(Current_ZoneAndAct).w	; Leftover check from Sonic 1 for SBZ3
+		move.b	(v_zone).w,d0
+		cmpi.w	#(id_LZ<<8)+3,(v_zone).w	; Leftover check from Sonic 1 for SBZ3
 		bne.s	loc_FB66
 		moveq	#5,d0
 
@@ -944,13 +944,13 @@ loc_101D4:
 		; will access a dangling pointer!
 		movea.l	a0,a2
 	endif
-		cmpi.w	#(id_SBZ<<8)+1,(Current_ZoneAndAct).w
+		cmpi.w	#(id_SBZ<<8)+1,(v_zone).w
 		bne.w	JmpTo_KillCharacter
 		cmpi.w	#$2000,(v_player+obX).w
 		blo.w	JmpTo_KillCharacter
 		clr.b	(v_lastlamp).w
-		move.w	#1,(Level_Inactive_flag).w
-		move.w	#(id_LZ<<8)+3,(Current_ZoneAndAct).w
+		move.w	#1,(f_restart).w
+		move.w	#(id_LZ<<8)+3,(v_zone).w
 		rts
 ; ---------------------------------------------------------------------------
 
@@ -1327,10 +1327,10 @@ locret_104FA:
 
 ; Sonic_Floor:
 Sonic_DoLevelCollision:
-		move.l	#v_colladdr1,(Collision_addr).w
+		move.l	#v_collision1,(v_collindex).w
 		cmpi.b	#$C,top_solid_bit(a0)
 		beq.s	loc_10514
-		move.l	#v_colladdr2,(Collision_addr).w
+		move.l	#v_collision2,(v_collindex).w
 
 loc_10514:
 		move.b	lrb_solid_bit(a0),d5
@@ -1711,7 +1711,7 @@ Obj01_ResetLevel:
 		beq.s	locret_108C8
 		subq.w	#1,restartime(a0)
 		bne.s	locret_108C8
-		move.w	#1,(Level_Inactive_flag).w
+		move.w	#1,(f_restart).w
 
 locret_108C8:
 		rts
@@ -2005,37 +2005,19 @@ SonicAni_S1Float4:	dc.b   3,$3C,$FD,  0
 
 ; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
 
-
+; loc_1B848:
 LoadSonicDynPLC:
-		moveq	#0,d0
-		move.b	obFrame(a0),d0
-		cmp.b	(Sonic_LastLoadedDPLC).w,d0
-		beq.s	locret_10C34
-		move.b	d0,(Sonic_LastLoadedDPLC).w
-		lea	(SonicDynPLC).l,a2
-		add.w	d0,d0
-		adda.w	(a2,d0.w),a2
-		move.w	(a2)+,d5
-		subq.w	#1,d5
-		bmi.s	locret_10C34
-		move.w	#tiles_to_bytes(ArtTile_Sonic),d4
-; loc_10C08:
-SPLC_ReadEntry:
-		moveq	#0,d1
-		move.w	(a2)+,d1
-		move.w	d1,d3
-		lsr.w	#8,d3
-		andi.w	#$F0,d3
-		addi.w	#$10,d3
-		andi.w	#$FFF,d1
-		lsl.l	#5,d1
-		addi.l	#Art_Sonic,d1
-		move.w	d4,d2
-		add.w	d3,d4
-		add.w	d3,d4
-		jsr	(QueueDMATransfer).l
-		dbf	d5,SPLC_ReadEntry
+	move.b	obFrame(a0),d0		; get Sonic's current frame
+; loc_1B84E:
+LoadSonicDynPLC_Part2:
+	cmp.b	(v_sonframenum).w,d0	; has the frame changed?
+	beq.s	return_1B89A			; if not, nothing to do
+	move.b	d0,(v_sonframenum).w	; update cached frame number
+	lea	(SonicDynPLC).l,a2		; load Sonic DPLC table
+	move.w	#tiles_to_bytes(ArtTile_Sonic),d4	; starting VRAM tile
+	move.l	#Art_Sonic,d6		; base Sonic art pointer
+	jmp	(LoadDynPLC).l			; load DPLC
 
-locret_10C34:
-		rts
+return_1B89A:
+	rts					; return
 ; End of function LoadSonicDynPLC

@@ -73,7 +73,7 @@ Obj57_PB:
 		asl.l	#8,d0
 		add.l	d0,d1
 		move.l	d1,obX(a0)
-		move.b	(Vint_runcount+3).w,d0
+		move.b	(v_vblank_count+3).w,d0
 		andi.b	#$F,d0
 		bne.w	$16890+$8D4	;	JmpTo7_DisplaySprite
 		bsr.w	$16890+$8F2	;	JmpTo_RandomNumber
@@ -97,9 +97,9 @@ Obj57_PB:
 		addq.b	#2,ob2ndRout(a0)
 		move.w	#-$26,objoff_3C(a0)
 		move.w	#$C,objoff_2A(a0)
-		tst.b	(Boss_defeated_flag).w
+		tst.b	(v_bossstatus).w
 		bne.s	.end
-		move.b	#1,(Boss_defeated_flag).w
+		move.b	#1,(v_bossstatus).w
 
 .end:
 		rts

@@ -26,14 +26,14 @@ loc_7BC6:
 		move.l	#Map_obj11_GHZ,obMap(a0)
 		move.w	#make_art_tile(ArtTile_GHZ_Bridge,2,0),obGfx(a0)
 		move.b	#3,obPriority(a0)
-		cmpi.b	#id_EHZ,(Current_Zone).w
+		cmpi.b	#id_EHZ,(v_zone).w
 		bne.s	loc_7BFA
 		move.l	#Map_obj11_EHZ,obMap(a0)
 		move.w	#make_art_tile(ArtTile_EHZ_Bridge,2,0),obGfx(a0)
 		move.b	#3,obPriority(a0)
 
 loc_7BFA:
-		cmpi.b	#id_HPZ,(Current_Zone).w
+		cmpi.b	#id_HPZ,(v_zone).w
 		bne.s	loc_7C14
 		addq.b	#4,obRoutine(a0)
 		move.l	#Map_obj11_HPZ,obMap(a0)
@@ -310,7 +310,7 @@ sub_7E60:
 		moveq	#0,d0
 		tst.w	(v_player+obVelX).w
 		bne.s	loc_7E72
-		move.b	(Vint_runcount+3).w,d0
+		move.b	(v_vblank_count+3).w,d0
 		andi.w	#$1C,d0
 		lsr.w	#1,d0
 
@@ -322,7 +322,7 @@ loc_7E72:
 		moveq	#0,d0
 		tst.w	(v_player2+obVelX).w
 		bne.s	loc_7E90
-		move.b	(Vint_runcount+3).w,d0
+		move.b	(v_vblank_count+3).w,d0
 		andi.w	#$1C,d0
 		lsr.w	#1,d0
 

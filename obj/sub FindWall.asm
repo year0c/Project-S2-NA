@@ -18,7 +18,7 @@ loc_12EFA:
 ; ===========================================================================
 
 loc_12F08:
-		movea.l	(Collision_addr).w,a2
+		movea.l	(v_collindex).w,a2
 		add.w	d0,d0
 		move.w	(a2,d0.w),d0
 		beq.s	loc_12EFA
@@ -97,7 +97,7 @@ loc_12FA0:
 ; ===========================================================================
 
 loc_12FAE:
-		movea.l	(Collision_addr).w,a2
+		movea.l	(v_collindex).w,a2
 		add.w	d0,d0
 		move.w	(a2,d0.w),d0
 		beq.s	loc_12FA0

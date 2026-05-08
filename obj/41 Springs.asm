@@ -28,7 +28,7 @@ Obj41_Init:
 		addq.b	#2,obRoutine(a0)
 		move.l	#Map_obj41_GHZ,obMap(a0)
 		move.w	#make_art_tile(ArtTile_S1_Spring_Horizontal,0,0),obGfx(a0)
-		tst.b	(Current_Zone).w
+		tst.b	(v_zone).w
 		beq.s	.isGHZ
 		move.l	#Map_obj41,obMap(a0)
 		move.w	#make_art_tile(ArtTile_Spring_Vertical,0,0),obGfx(a0)
@@ -56,7 +56,7 @@ Obj41_Init_Horizontal:
 		move.b	#2,obAnim(a0)
 		move.b	#3,obFrame(a0)
 		move.w	#make_art_tile(ArtTile_S1_Spring_Vertical,0,0),obGfx(a0)
-		tst.b	(Current_Zone).w
+		tst.b	(v_zone).w
 		beq.s	.isGHZ
 		move.w	#make_art_tile(ArtTile_Spring_Horizontal,0,0),obGfx(a0)
 
@@ -94,7 +94,7 @@ Obj41_Init_Common:
 		btst	#1,d0
 		beq.s	loc_E2F8
 		bset	#5,obGfx(a0)
-		tst.b	(Current_Zone).w
+		tst.b	(v_zone).w
 		beq.s	loc_E2F8
 		move.l	#Map_obj41a,obMap(a0)
 

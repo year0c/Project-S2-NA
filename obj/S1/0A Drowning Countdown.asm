@@ -278,7 +278,7 @@ loc_12242:
 		move.w	d0,obY(a1)
 		jsr	(RandomNumber).l
 		move.b	d0,obAngle(a1)
-		move.w	(Timer_frames).w,d0
+		move.w	(v_framecount).w,d0
 		andi.b	#3,d0
 		bne.s	loc_122D2
 		move.b	#$E,obSubtype(a1)

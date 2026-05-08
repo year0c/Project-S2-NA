@@ -12,11 +12,11 @@ ChangeWaterSurfacePos:
 		; just avoid pushing the sprite to the right when the game is about
 		; to be paused.
 		move.b	(v_jpadpress1).w,d0 ; is Start button pressed?
-		or.b	(v_2Pjpadpress).w,d0 ; (either player)
+		or.b	(v_P2jpadhold).w,d0 ; (either player)
 		andi.b	#btnStart,d0
 		bne.s	loc_402C
 	endif
-		btst	#0,(Timer_frames+1).w
+		btst	#0,(v_framecount+1).w
 		beq.s	loc_402C
 		addi.w	#$20,d1
 
@@ -56,7 +56,7 @@ loc_4058:
 		bhs.s	loc_4086
 		tst.w	d0
 		bpl.s	loc_4086
-		move.b	#223,(v_hbla_line).w
+		move.b	#223,(v_hblank_line).w
 		move.b	#1,(f_wtr_state).w
 
 loc_4086:
@@ -65,7 +65,7 @@ loc_4086:
 		move.w	#223,d0
 
 loc_4090:
-		move.b	d0,(v_hbla_line).w
+		move.b	d0,(v_hblank_line).w
 
 locret_4094:
 		rts
@@ -79,7 +79,7 @@ WaterHeight:	dc.w  $600, $328, $900,	$228
 
 DynamicWaterHeight:
 		moveq	#0,d0
-		move.b	(Current_Act).w,d0
+		move.b	(v_act).w,d0
 		add.w	d0,d0
 		move.w	DynWater_Index(pc,d0.w),d0
 		jsr	DynWater_Index(pc,d0.w)
@@ -106,14 +106,14 @@ DynWater_Index:	dc.w DynWater_HPZ1-DynWater_Index
 ; ---------------------------------------------------------------------------
 
 DynWater_HPZ1:						; This uses the 2nd controller to make the water level move up or down
-		btst	#bitUp,(v_2Pjpadhold).w
+		btst	#bitUp,(v_P2jpadhold).w
 		beq.s	loc_40E2
 		tst.w	(v_waterpos3).w
 		beq.s	loc_40E2
 		subq.w	#1,(v_waterpos3).w
 
 loc_40E2:
-		btst	#bitDn,(v_2Pjpadhold).w
+		btst	#bitDn,(v_P2jpadhold).w
 		beq.s	locret_40F6
 		cmpi.w	#$700,(v_waterpos3).w
 		beq.s	locret_40F6
@@ -309,15 +309,15 @@ loc_42C0:
 ; ---------------------------------------------------------------------------
 
 S1_LZWindTunnels:					; leftover from Sonic 1's LZ
-		tst.w	(Debug_placement_mode).w
+		tst.w	(v_debuguse).w
 		bne.w	locret_43A2
 		lea	(S1LZWind_Data+8).l,a2
 		moveq	#0,d0
-		move.b	(Current_Act).w,d0
+		move.b	(v_act).w,d0
 		lsl.w	#3,d0
 		adda.w	d0,a2
 		moveq	#0,d1
-		tst.b	(Current_Act).w
+		tst.b	(v_act).w
 		bne.s	loc_42EA
 		moveq	#1,d1
 		subq.w	#8,a2
@@ -340,7 +340,7 @@ loc_42EE:
 		; d0 is overwritten but later used as if it wasn't!
 		move.w	d0,d1
 	endif
-		move.b	(Vint_runcount+3).w,d0
+		move.b	(v_vblank_count+3).w,d0
 		andi.b	#$3F,d0
 		bne.s	loc_4326
 		move.w	#sfx_Waterfall,d0
@@ -360,7 +360,7 @@ loc_4326:
 		cmp.w	(a2),d0
 		bhs.s	loc_4354
 		moveq	#2,d0
-		cmpi.b	#1,(Current_Act).w
+		cmpi.b	#1,(v_act).w
 		bne.s	loc_4350
 		neg.w	d0
 
@@ -456,7 +456,7 @@ loc_4430:
 		clr.b	obInertia+1(a1)
 		move.b	#AniIDSonAni_WaterSlide,obAnim(a1)
 		move.b	#1,(f_slidemode).w
-		move.b	(Vint_runcount+3).w,d0
+		move.b	(v_vblank_count+3).w,d0
 		andi.b	#$1F,d0
 		bne.s	locret_4454
 		move.w	#sfx_Waterfall,d0

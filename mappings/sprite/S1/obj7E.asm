@@ -4,7 +4,7 @@ Map_Obj7E_internal:
 		dc.w Map_Obj7E_internal_00AE-Map_Obj7E_internal
 		; Bug: This uses an invalid entry.
 		; Change the invalid value to 'word_C1E4' to fix this bug.
-		dc.w $1C1E4-Map_Obj7E_internal	; leftover pointer
+		;dc.w $1C1E4-Map_Obj7E_internal	; leftover pointer
 		dc.w Map_Obj7E_internal_00E8-Map_Obj7E_internal
 		dc.w Map_Obj7E_internal_010A-Map_Obj7E_internal
 		dc.w Map_Obj7E_internal_012C-Map_Obj7E_internal

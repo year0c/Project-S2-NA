@@ -22,7 +22,7 @@ Obj38_Init:
 		tst.b	obAnim(a0)			; is this the shield?
 		bne.s	loc_1240C			; if not, branch
 		move.w	#make_art_tile(ArtTile_Shield,0,0),obGfx(a0)
-		cmpi.b	#id_EHZ,(Current_Zone).w		; is this Emerald Hill Zone?
+		cmpi.b	#id_EHZ,(v_zone).w		; is this Emerald Hill Zone?
 		bne.s	loc_12406			; if not, branch
 		move.w	#make_art_tile(ArtTile_EHZ_Shield,0,0),obGfx(a0)
 

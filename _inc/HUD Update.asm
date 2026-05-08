@@ -4,7 +4,7 @@
 HudUpdate:
 		nop
 		lea	(vdp_data_port).l,a6
-		tst.w	(Debug_mode_flag).w
+		tst.w	(f_debugmode).w
 		bne.w	loc_1B330
 		tst.b	(f_scorecount).w
 		beq.s	loc_1B266

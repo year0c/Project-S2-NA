@@ -5,7 +5,7 @@
 		lea	(vdp_data_port).l,a6
 		lea	(Scroll_flags_BG).w,a2
 		lea	(Camera_BG_X_pos).w,a3
-		lea	(v_lvllayoutbg).w,a4
+		lea	(v_lvllayout_bg).w,a4
 		move.w	#$6000,d2
 		bsr.w	DrawBGScrollBlock1
 		lea	(Scroll_flags_BG2).w,a2
@@ -20,7 +20,7 @@ LoadTilesAsYouMove:
 		lea	(vdp_data_port).l,a6
 		lea	(Scroll_flags_BG_copy).w,a2
 		lea	(Camera_BG_copy).w,a3
-		lea	(v_lvllayoutbg).w,a4
+		lea	(v_lvllayout_bg).w,a4
 		move.w	#$6000,d2
 		bsr.w	DrawBGScrollBlock1
 		lea	(Scroll_flags_BG2_copy).w,a2
@@ -259,7 +259,7 @@ locret_6A80:
 DrawBGScrollBlock2:
 		tst.b	(a2)
 		beq.w	locret_6ACE
-		cmpi.b	#id_SBZ,(Current_Zone).w
+		cmpi.b	#id_SBZ,(v_zone).w
 		beq.w	Draw_SBz
 		bclr	#0,(a2)
 		beq.s	loc_6AAE
@@ -357,7 +357,7 @@ loc_6B66:
 DrawBGScrollBlock3:
 		tst.b	(a2)
 		beq.w	locret_6BC8
-		cmpi.b	#id_MZ,(Current_Zone).w
+		cmpi.b	#id_MZ,(v_zone).w
 		beq.w	Draw_Mz
 		bclr	#0,(a2)
 		beq.s	loc_6BA8
@@ -1064,9 +1064,9 @@ loc_711E:
 		move.w	#$4000,d2
 		bsr.s	DrawChunks
 		lea	(Camera_BG_X_pos).w,a3
-		lea	(v_lvllayoutbg).w,a4
+		lea	(v_lvllayout_bg).w,a4
 		move.w	#$6000,d2
-		tst.b	(Current_Zone).w
+		tst.b	(v_zone).w
 		beq.w	Draw_GHz_Bg
 ; End of function LoadTilesFromStart
 
