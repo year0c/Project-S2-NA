@@ -93,9 +93,9 @@ Vectors:
 		dc.l ErrorTrap			; IRQ level 1
 		dc.l ErrorTrap			; IRQ level 2
 		dc.l ErrorTrap			; IRQ level 3 (28)
-		dc.l H_Int			; IRQ level 4 (horizontal retrace interrupt)
+		dc.l HBlank			; IRQ level 4 (horizontal retrace interrupt)
 		dc.l ErrorTrap			; IRQ level 5
-		dc.l V_Int			; IRQ level 6 (vertical retrace interrupt)
+		dc.l VBlank			; IRQ level 6 (vertical retrace interrupt)
 		dc.l ErrorTrap			; IRQ level 7 (32)
 		dc.l ErrorTrap			; TRAP #00 exception
 		dc.l ErrorTrap			; TRAP #01 exception
@@ -418,26 +418,26 @@ Art_Text:	bincludeEndMarker	"art/uncompressed/Level select and Debug Mode text.b
 ; ---------------------------------------------------------------------------
 ; Vertical interrupt
 ; ---------------------------------------------------------------------------
-Vint_SwitchTbl:
-Vint_Lag_ptr:		dc.w Vint_Lag-Vint_SwitchTbl	; (lag frame)
-Vint_SEGA_ptr:		dc.w Vint_SEGA-Vint_SwitchTbl	; Sega Screen
-Vint_Title_ptr:		dc.w Vint_Title-Vint_SwitchTbl	; Title Screen, Credits
-Vint_Unused6_ptr:	dc.w Vint_Unused6-Vint_SwitchTbl; (unused)
-Vint_Level_ptr:		dc.w Vint_Level-Vint_SwitchTbl	; Levels, Demos
-Vint_S1SS_ptr:		dc.w Vint_S1SS-Vint_SwitchTbl	; Special Stages
-Vint_TitleCard_ptr:	dc.w Vint_TitleCard-Vint_SwitchTbl	; Title Cards
-Vint_UnusedE_ptr:	dc.w Vint_UnusedE-Vint_SwitchTbl; (unused)
-Vint_Pause_ptr:		dc.w Vint_Pause-Vint_SwitchTbl	; Paused
-Vint_Fade_ptr:		dc.w Vint_Fade-Vint_SwitchTbl	; Palette Fade
-Vint_PCM_ptr:		dc.w Vint_PCM-Vint_SwitchTbl	; Sega Screen PCM
-Vint_SSResults_ptr:	dc.w Vint_SSResults-Vint_SwitchTbl		; Special Stage Results?
-Vint_TitleCard2_ptr:	dc.w Vint_TitleCard-Vint_SwitchTbl	; Second Title Cards?
+VBlank_SwitchTbl:
+VBlank_Lag_ptr:		dc.w VBlank_Lag-VBlank_SwitchTbl	; (lag frame)
+VBlank_SEGA_ptr:		dc.w VBlank_SEGA-VBlank_SwitchTbl	; Sega Screen
+VBlank_Title_ptr:		dc.w VBlank_Title-VBlank_SwitchTbl	; Title Screen, Credits
+VBlank_Unused6_ptr:	dc.w VBlank_Unused6-VBlank_SwitchTbl; (unused)
+VBlank_Level_ptr:		dc.w VBlank_Level-VBlank_SwitchTbl	; Levels, Demos
+VBlank_S1SS_ptr:		dc.w VBlank_S1SS-VBlank_SwitchTbl	; Special Stages
+VBlank_TitleCard_ptr:	dc.w VBlank_TitleCard-VBlank_SwitchTbl	; Title Cards
+VBlank_UnusedE_ptr:	dc.w VBlank_UnusedE-VBlank_SwitchTbl; (unused)
+VBlank_Pause_ptr:		dc.w VBlank_Pause-VBlank_SwitchTbl	; Paused
+VBlank_Fade_ptr:		dc.w VBlank_Fade-VBlank_SwitchTbl	; Palette Fade
+VBlank_PCM_ptr:		dc.w VBlank_PCM-VBlank_SwitchTbl	; Sega Screen PCM
+VBlank_SSResults_ptr:	dc.w VBlank_SSResults-VBlank_SwitchTbl		; Special Stage Results?
+VBlank_TitleCard2_ptr:	dc.w VBlank_TitleCard-VBlank_SwitchTbl	; Second Title Cards?
 ; ---------------------------------------------------------------------------
 
-V_Int:
+VBlank:
 		movem.l	d0-a6,-(sp)			; backup all registers except stack pointer (a7)
 		tst.b	(v_vblank_routine).w		; was a VBlank routine set?
-		beq.s	Vint_Lag			; if not, this is a lag frame, branch
+		beq.s	VBlank_Lag			; if not, this is a lag frame, branch
 
 .waitforvint:	; waits until vertical blanking is taking place
 		move.w	(vdp_control_port).l,d0
@@ -454,13 +454,13 @@ V_Int:
 
 .notPAL:
 		move.b	(v_vblank_routine).w,d0
-		move.b	#VintID_Lag,(v_vblank_routine).w
+		move.b	#VBlankID_Lag,(v_vblank_routine).w
 		move.w	#1,(f_hblank_pal).w		; allows horizontal interrupt code to run
 		andi.w	#$3E,d0
-		move.w	Vint_SwitchTbl(pc,d0.w),d0
-		jsr	Vint_SwitchTbl(pc,d0.w)
+		move.w	VBlank_SwitchTbl(pc,d0.w),d0
+		jsr	VBlank_SwitchTbl(pc,d0.w)
 
-Vint_SoundDriver:
+VBlank_SoundDriver:
 		jsr	(UpdateMusic).l
 
 VintRet:
@@ -470,13 +470,13 @@ VintRet:
 
 ; ===========================================================================
 ; loc_B86: VintSub0:
-Vint_Lag:
+VBlank_Lag:
 		cmpi.b	#GameModeID_TitleCard+GameModeID_Level,(v_gamemode).w
 		beq.s	loc_BA0
 		cmpi.b	#GameModeID_Demo,(v_gamemode).w
 		beq.s	loc_BA0
 		cmpi.b	#GameModeID_Level,(v_gamemode).w
-		bne.w	Vint_SoundDriver
+		bne.w	VBlank_SoundDriver
 
 loc_BA0:
 		tst.b	(Water_flag).w
@@ -504,7 +504,7 @@ loc_C26:
 		move.w	(v_hblank_hreg).w,(a5)
 		move.w	#$8200+(vram_fg>>10),(vdp_control_port).l
 		startZ80
-		bra.w	Vint_SoundDriver
+		bra.w	VBlank_SoundDriver
 ; ---------------------------------------------------------------------------
 ; loc_C3E:
 Vint0_noWater:
@@ -524,13 +524,13 @@ loc_C66:
 		move.w	#$8200+(vram_fg>>10),(vdp_control_port).l
 		move.l	(v_bg3scrposy_vdp).w,(Camera_X_pos_copy).w
 		writeVRAM	v_spritetablebuffer,vram_sprites
-		bra.w	Vint_SoundDriver
+		bra.w	VBlank_SoundDriver
 ; ===========================================================================
 ; loc_CAA: VintSub2:
-Vint_SEGA:
+VBlank_SEGA:
 		bsr.w	Do_ControllerPal
 ; loc_CAE: VintSub14:
-Vint_PCM:
+VBlank_PCM:
 		tst.w	(v_generictimer).w
 		beq.w	.end
 		subq.w	#1,(v_generictimer).w
@@ -539,7 +539,7 @@ Vint_PCM:
 		rts
 ; ===========================================================================
 ; loc_CBC: VintSub4:
-Vint_Title:
+VBlank_Title:
 		bsr.w	Do_ControllerPal
 		bsr.w	ProcessDPLC
 		tst.w	(v_generictimer).w
@@ -550,16 +550,16 @@ Vint_Title:
 		rts
 ; ===========================================================================
 ; loc_CD2: VintSub6:
-Vint_Unused6:
+VBlank_Unused6:
 		bsr.w	Do_ControllerPal
 		rts
 ; ===========================================================================
 ; loc_CD8: VintSub10:
-Vint_Pause:
+VBlank_Pause:
 		cmpi.b	#GameModeID_SpecialStage,(v_gamemode).w
-		beq.w	Vint_S1SS
+		beq.w	VBlank_S1SS
 ; loc_CE2: VintSub8:
-Vint_Level:
+VBlank_Level:
 		stopZ80
 		waitZ80
 		bsr.w	ReadJoypads
@@ -614,7 +614,7 @@ Do_Updates:
 
 ; ===========================================================================
 ; loc_E02: VintSubA:
-Vint_S1SS:
+VBlank_S1SS:
 		stopZ80
 		waitZ80
 		bsr.w	ReadJoypads
@@ -632,7 +632,7 @@ Vint_S1SS:
 		rts
 ; ===========================================================================
 ; loc_EA2: VintSubC: VintSub18:
-Vint_TitleCard:
+VBlank_TitleCard:
 		stopZ80
 		waitZ80
 		bsr.w	ReadJoypads
@@ -661,20 +661,20 @@ loc_F08:
 		rts
 ; ===========================================================================
 ; loc_F88: VintSubE:
-Vint_UnusedE:
+VBlank_UnusedE:
 		bsr.w	Do_ControllerPal
 		addq.b	#1,(v_vblank_0e_counter).w
-		move.b	#VintID_UnusedE,(v_vblank_routine).w
+		move.b	#VBlankID_UnusedE,(v_vblank_routine).w
 		rts
 ; ===========================================================================
 ; loc_F98: VintSub12:
-Vint_Fade:
+VBlank_Fade:
 		bsr.w	Do_ControllerPal
 		move.w	(v_hblank_hreg).w,(a5)
 		bra.w	ProcessDPLC
 ; ===========================================================================
 ; loc_FA4: VintSub16:
-Vint_SSResults:
+VBlank_SSResults:
 		stopZ80
 		waitZ80
 		bsr.w	ReadJoypads
@@ -716,7 +716,7 @@ loc_10A2:
 
 ; ===========================================================================
 ; Start of H-INT code
-H_Int:
+HBlank:
 		tst.w	(f_hblank_pal).w
 		beq.w	locret_1184
 		tst.w	(Two_player_mode).w
@@ -1332,7 +1332,7 @@ loc_2162:
 		move.w	#$16-1,d4
 
 loc_216C:
-		move.b	#VintID_Fade,(v_vblank_routine).w
+		move.b	#VBlankID_Fade,(v_vblank_routine).w
 		bsr.w	WaitForVint
 		bsr.s	Pal_FadeIn
 		bsr.w	RunPLC_RAM
@@ -1429,7 +1429,7 @@ Pal_FadeToBlack:
 		move.w	#$16-1,d4
 
 loc_21F8:
-		move.b	#VintID_Fade,(v_vblank_routine).w
+		move.b	#VBlankID_Fade,(v_vblank_routine).w
 		bsr.w	WaitForVint
 		bsr.s	Pal_FadeOut
 		bsr.w	RunPLC_RAM
@@ -1524,7 +1524,7 @@ loc_2286:
 		move.w	#$16-1,d4
 
 loc_2290:
-		move.b	#VintID_Fade,(v_vblank_routine).w
+		move.b	#VBlankID_Fade,(v_vblank_routine).w
 		bsr.w	WaitForVint
 		bsr.s	Pal_WhiteToBlack
 		bsr.w	RunPLC_RAM
@@ -1613,7 +1613,7 @@ Pal_MakeFlash:
 		move.w	#$16-1,d4
 
 loc_2320:
-		move.b	#VintID_Fade,(v_vblank_routine).w
+		move.b	#VBlankID_Fade,(v_vblank_routine).w
 		bsr.w	WaitForVint
 		bsr.s	Pal_ToWhite
 		bsr.w	RunPLC_RAM
@@ -2100,19 +2100,19 @@ loc_316A:
 		enable_display
 
 Sega_WaitPalette:
-		move.b	#VintID_SEGA,(v_vblank_routine).w
+		move.b	#VBlankID_SEGA,(v_vblank_routine).w
 		bsr.w	WaitForVint
 		bsr.w	PalCycle_Sega
 		bne.s	Sega_WaitPalette
 
 		move.b	#sfx_Sega,d0
 		bsr.w	QueueSound2
-		move.b	#VintID_PCM,(v_vblank_routine).w
+		move.b	#VBlankID_PCM,(v_vblank_routine).w
 		bsr.w	WaitForVint
 		move.w	#30,(v_generictimer).w
 
 Sega_WaitEnd:
-		move.b	#VintID_SEGA,(v_vblank_routine).w
+		move.b	#VBlankID_SEGA,(v_vblank_routine).w
 		bsr.w	WaitForVint
 		tst.w	(v_generictimer).w
 		beq.s	Sega_GoToTitleScreen
@@ -2228,7 +2228,7 @@ loc_32C4:
 		bsr.w	Pal_FadeFromBlack
 
 TitleScreen_Loop:
-		move.b	#VintID_Title,(v_vblank_routine).w
+		move.b	#VBlankID_Title,(v_vblank_routine).w
 		bsr.w	WaitForVint
 		jsr	(ExecuteObjects).l
 		bsr.w	Deform_TitleScreen
@@ -2296,7 +2296,7 @@ Title_CheckLvlSel:
 	if FixBugs
 		; Fix the level selects graphics bug
 		; https://info.sonicretro.org/SCHG_How-to:Fix_the_Level_Select_graphics_bug
-		move.b	#VintID_Title,(v_vblank_routine).w	; set routine 4 in V-Int
+		move.b	#VBlankID_Title,(v_vblank_routine).w	; set routine 4 in V-Int
 		bsr.w	WaitForVint		; run V-Blank one extra frame to prevent graphical glitches
 	endif
 
@@ -2319,7 +2319,7 @@ LevelSelect_ClearVRAM:
 ; ---------------------------------------------------------------------------
 
 LevelSelect:
-		move.b	#VintID_Title,(v_vblank_routine).w
+		move.b	#VBlankID_Title,(v_vblank_routine).w
 		bsr.w	WaitForVint
 		bsr.w	LevelSelect_Controls
 		bsr.w	RunPLC_RAM
@@ -2443,7 +2443,7 @@ Demo:
 		move.w	#30,(v_generictimer).w
 
 loc_3630:
-		move.b	#VintID_Title,(v_vblank_routine).w
+		move.b	#VBlankID_Title,(v_vblank_routine).w
 		bsr.w	WaitForVint
 		bsr.w	RunPLC_RAM
 		move.w	(v_objspace+obX).w,d0
@@ -2949,7 +2949,7 @@ Level_PlayBgm:
 		move.b	#id_Obj34,(v_titlecard).w
 
 Level_TtlCardLoop:
-		move.b	#VintID_TitleCard,(v_vblank_routine).w
+		move.b	#VBlankID_TitleCard,(v_vblank_routine).w
 		bsr.w	WaitForVint
 		jsr	(ExecuteObjects).l
 		jsr	(BuildSprites).l
@@ -2983,7 +2983,7 @@ Level_CheckTtlCard:
 		; possible for Vint to interrupt in the middle of a transfer,
 		; resulting in visual corruption. This will also make title cards
 		; smoother should decompression get upgraded with something faster.
-		move.b	#VintID_TitleCard,(v_vblank_routine).w ; set Vint routine to $0C
+		move.b	#VBlankID_TitleCard,(v_vblank_routine).w ; set Vint routine to $0C
 		bsr.w	WaitForVint			; wait until Vint has finished
 	endif
 		jsr	(HUD_Base).l
@@ -3106,7 +3106,7 @@ Level_Delay:
 		move.w	#4-1,d1
 
 Level_DelayLoop:
-		move.b	#VintID_Level,(v_vblank_routine).w
+		move.b	#VBlankID_Level,(v_vblank_routine).w
 		bsr.w	WaitForVint
 		dbf	d1,Level_DelayLoop
 		move.w	#$202F,(v_pfade_start).w
@@ -3136,7 +3136,7 @@ Level_StartGame:
 ; ---------------------------------------------------------------------------
 Level_MainLoop:
 		bsr.w	PauseGame
-		move.b	#VintID_Level,(v_vblank_routine).w
+		move.b	#VBlankID_Level,(v_vblank_routine).w
 		bsr.w	WaitForVint
 		addq.w	#1,(v_framecount).w
 		bsr.w	MoveSonicInDemo
@@ -3195,7 +3195,7 @@ Level_FadeDemo:
 		clr.w	(PalChangeSpeed).w
 
 Level_FDLoop:
-		move.b	#VintID_Level,(v_vblank_routine).w
+		move.b	#VBlankID_Level,(v_vblank_routine).w
 		bsr.w	WaitForVint
 		bsr.w	MoveSonicInDemo
 		jsr	(ExecuteObjects).l
@@ -3435,7 +3435,7 @@ loc_5158:
 
 loc_516A:
 		bsr.w	PauseGame
-		move.b	#VintID_S1SS,(v_vblank_routine).w
+		move.b	#VBlankID_S1SS,(v_vblank_routine).w
 		bsr.w	WaitForVint
 		bsr.w	MoveSonicInDemo
 		move.w	(v_jpadhold1).w,(v_jpadhold2).w
@@ -3464,7 +3464,7 @@ loc_51CA:
 		clr.w	(PalChangeSpeed).w
 
 loc_51DA:
-		move.b	#VintID_SSResults,(v_vblank_routine).w
+		move.b	#VBlankID_SSResults,(v_vblank_routine).w
 		bsr.w	WaitForVint
 		bsr.w	MoveSonicInDemo
 		move.w	(v_jpadhold1).w,(v_jpadhold2).w
@@ -3509,7 +3509,7 @@ loc_5214:
 
 loc_529C:
 		bsr.w	PauseGame
-		move.b	#VintID_TitleCard,(v_vblank_routine).w
+		move.b	#VBlankID_TitleCard,(v_vblank_routine).w
 		bsr.w	WaitForVint
 		jsr	(ExecuteObjects).l
 		jsr	(BuildSprites).l
@@ -10440,8 +10440,8 @@ loc_13094:
 		add.l	d1,d2
 		swap	d2
 		swap	d3
-		move.b	d0,(Primary_Angle).w
-		move.b	d0,(Secondary_Angle).w
+		move.b	d0,(v_anglebuffer).w
+		move.b	d0,(v_anglebuffer2).w
 		move.b	d0,d1
 		addi.b	#$20,d0
 		bpl.s	loc_130D4
@@ -10489,8 +10489,8 @@ sub_13102:
 
 loc_1311A:
 		move.b	lrb_solid_bit(a0),d5
-		move.b	d0,(Primary_Angle).w
-		move.b	d0,(Secondary_Angle).w
+		move.b	d0,(v_anglebuffer).w
+		move.b	d0,(v_anglebuffer2).w
 		addi.b	#$20,d0
 		andi.b	#$C0,d0
 		cmpi.b	#$40,d0
@@ -10517,7 +10517,7 @@ loc_1315E:
 		move.b	obWidth(a0),d0
 		ext.w	d0
 		add.w	d0,d3
-		lea	(Primary_Angle).w,a4
+		lea	(v_anglebuffer).w,a4
 		movea.w	#$10,a3
 		move.w	#0,d6
 		bsr.w	FindFloor
@@ -10531,7 +10531,7 @@ loc_1315E:
 		move.b	obWidth(a0),d0
 		ext.w	d0
 		sub.w	d0,d3
-		lea	(Secondary_Angle).w,a4
+		lea	(v_anglebuffer2).w,a4
 		movea.w	#$10,a3
 		move.w	#0,d6
 		bsr.w	FindFloor
@@ -10539,10 +10539,10 @@ loc_1315E:
 		move.b	#0,d2
 
 loc_131BE:
-		move.b	(Secondary_Angle).w,d3
+		move.b	(v_anglebuffer2).w,d3
 		cmp.w	d0,d1
 		ble.s	loc_131CC
-		move.b	(Primary_Angle).w,d3
+		move.b	(v_anglebuffer).w,d3
 		exg.l	d0,d1
 
 loc_131CC:
@@ -10561,14 +10561,14 @@ locret_131D4:
 
 loc_131DE:
 		addi.w	#$A,d2
-		lea	(Primary_Angle).w,a4
+		lea	(v_anglebuffer).w,a4
 		movea.w	#$10,a3
 		move.w	#0,d6
 		bsr.w	FindFloor
 		move.b	#0,d2
 
 loc_131F6:
-		move.b	(Primary_Angle).w,d3
+		move.b	(v_anglebuffer).w,d3
 		btst	#0,d3
 		beq.s	locret_13202
 		move.b	d2,d3
@@ -10592,13 +10592,13 @@ ChkFloorEdge:
 		move.l	#v_collision2,(v_collindex).w
 
 loc_1322E:
-		lea	(Primary_Angle).w,a4
+		lea	(v_anglebuffer).w,a4
 		move.b	#0,(a4)
 		movea.w	#$10,a3
 		move.w	#0,d6
 		move.b	top_solid_bit(a0),d5
 		bsr.w	FindFloor
-		move.b	(Primary_Angle).w,d3
+		move.b	(v_anglebuffer).w,d3
 		btst	#0,d3
 		beq.s	locret_13254
 		move.b	#0,d3
@@ -10620,13 +10620,13 @@ ObjHitFloor2:
 		move.b	obHeight(a0),d0
 		ext.w	d0
 		add.w	d0,d2
-		lea	(Primary_Angle).w,a4
+		lea	(v_anglebuffer).w,a4
 		move.b	#0,(a4)
 		movea.w	#$10,a3
 		move.w	#0,d6
 		moveq	#$C,d5
 		bsr.w	FindFloor
-		move.b	(Primary_Angle).w,d3
+		move.b	(v_anglebuffer).w,d3
 		btst	#0,d3
 		beq.s	locret_1328C
 		move.b	#0,d3
@@ -10647,7 +10647,7 @@ loc_1328E:
 		move.b	obHeight(a0),d0
 		ext.w	d0
 		add.w	d0,d3
-		lea	(Primary_Angle).w,a4
+		lea	(v_anglebuffer).w,a4
 		movea.w	#$10,a3
 		move.w	#0,d6
 		bsr.w	FindWall
@@ -10661,7 +10661,7 @@ loc_1328E:
 		move.b	obHeight(a0),d0
 		ext.w	d0
 		add.w	d0,d3
-		lea	(Secondary_Angle).w,a4
+		lea	(v_anglebuffer2).w,a4
 		movea.w	#$10,a3
 		move.w	#0,d6
 		bsr.w	FindWall
@@ -10678,7 +10678,7 @@ sub_132EE:
 
 loc_132F6:
 		addi.w	#$A,d3
-		lea	(Primary_Angle).w,a4
+		lea	(v_anglebuffer).w,a4
 		movea.w	#$10,a3
 		move.w	#0,d6
 		bsr.w	FindWall
@@ -10691,13 +10691,13 @@ loc_132F6:
 ObjHitWallRight:
 		add.w	obX(a0),d3
 		move.w	obY(a0),d2
-		lea	(Primary_Angle).w,a4
+		lea	(v_anglebuffer).w,a4
 		move.b	#0,(a4)
 		movea.w	#$10,a3
 		move.w	#0,d6
 		moveq	#$D,d5
 		bsr.w	FindWall
-		move.b	(Primary_Angle).w,d3
+		move.b	(v_anglebuffer).w,d3
 		btst	#0,d3
 		beq.s	locret_1333E
 		move.b	#-$40,d3
@@ -10721,7 +10721,7 @@ Sonic_DontRunOnWalls:
 		move.b	obWidth(a0),d0
 		ext.w	d0
 		add.w	d0,d3
-		lea	(Primary_Angle).w,a4
+		lea	(v_anglebuffer).w,a4
 		movea.w	#-$10,a3
 		move.w	#$800,d6
 		bsr.w	FindFloor
@@ -10736,7 +10736,7 @@ Sonic_DontRunOnWalls:
 		move.b	obWidth(a0),d0
 		ext.w	d0
 		sub.w	d0,d3
-		lea	(Secondary_Angle).w,a4
+		lea	(v_anglebuffer2).w,a4
 		movea.w	#-$10,a3
 		move.w	#$800,d6
 		bsr.w	FindFloor
@@ -10753,7 +10753,7 @@ Sonic_DontRunOnWalls:
 loc_133B0:
 		subi.w	#$A,d2
 		eori.w	#$F,d2
-		lea	(Primary_Angle).w,a4
+		lea	(v_anglebuffer).w,a4
 		movea.w	#-$10,a3
 		move.w	#$800,d6
 		bsr.w	FindFloor
@@ -10769,12 +10769,12 @@ ObjHitCeiling:
 		ext.w	d0
 		sub.w	d0,d2
 		eori.w	#$F,d2
-		lea	(Primary_Angle).w,a4
+		lea	(v_anglebuffer).w,a4
 		movea.w	#-$10,a3
 		move.w	#$800,d6
 		moveq	#$D,d5
 		bsr.w	FindFloor
-		move.b	(Primary_Angle).w,d3
+		move.b	(v_anglebuffer).w,d3
 		btst	#0,d3
 		beq.s	locret_13406
 		move.b	#$80,d3
@@ -10794,7 +10794,7 @@ loc_13408:
 		ext.w	d0
 		sub.w	d0,d3
 		eori.w	#$F,d3
-		lea	(Primary_Angle).w,a4
+		lea	(v_anglebuffer).w,a4
 		movea.w	#-$10,a3
 		move.w	#$400,d6
 		bsr.w	FindWall
@@ -10809,7 +10809,7 @@ loc_13408:
 		ext.w	d0
 		sub.w	d0,d3
 		eori.w	#$F,d3
-		lea	(Secondary_Angle).w,a4
+		lea	(v_anglebuffer2).w,a4
 		movea.w	#-$10,a3
 		move.w	#$400,d6
 		bsr.w	FindWall
@@ -10827,7 +10827,7 @@ Sonic_HitWall:
 loc_13478:
 		subi.w	#$A,d3
 		eori.w	#$F,d3
-		lea	(Primary_Angle).w,a4
+		lea	(v_anglebuffer).w,a4
 		movea.w	#-$10,a3
 		move.w	#$400,d6
 		bsr.w	FindWall
@@ -10838,13 +10838,13 @@ loc_13478:
 ObjHitWallLeft:
 		add.w	obX(a0),d3
 		move.w	obY(a0),d2
-		lea	(Primary_Angle).w,a4
+		lea	(v_anglebuffer).w,a4
 		move.b	#0,(a4)
 		movea.w	#-$10,a3
 		move.w	#$400,d6
 		moveq	#$D,d5
 		bsr.w	FindWall
-		move.b	(Primary_Angle).w,d3
+		move.b	(v_anglebuffer).w,d3
 		btst	#0,d3
 		beq.s	locret_134C4
 		move.b	#$40,d3

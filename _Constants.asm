@@ -330,23 +330,23 @@ AniIDTailsAni_Float4:	ds.b 1
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
 ; V-Int routines
-offset :=	Vint_SwitchTbl
+offset :=	VBlank_SwitchTbl
 ptrsize :=	1
 idstart :=	0
 
-VintID_Lag =	id(Vint_Lag_ptr)	; 0
-VintID_SEGA =	id(Vint_SEGA_ptr)	; 2
-VintID_Title =	id(Vint_Title_ptr)	; 4
-VintID_Unused6 =	id(Vint_Unused6_ptr)	; 6
-VintID_Level =	id(Vint_Level_ptr)	; 8
-VintID_S1SS =	id(Vint_S1SS_ptr)	; $A
-VintID_TitleCard =	id(Vint_TitleCard_ptr)	; $C
-VintID_UnusedE =	id(Vint_UnusedE_ptr)	; $E
-VintID_Pause =	id(Vint_Pause_ptr)	; $10
-VintID_Fade =	id(Vint_Fade_ptr)	; $12
-VintID_PCM =	id(Vint_PCM_ptr)	; $14
-VintID_SSResults =	id(Vint_SSResults_ptr)	; $16
-VintID_TitleCard2 =	id(Vint_TitleCard2_ptr)	; $18
+VBlankID_Lag =	id(VBlank_Lag_ptr)	; 0
+VBlankID_SEGA =	id(VBlank_SEGA_ptr)	; 2
+VBlankID_Title =	id(VBlank_Title_ptr)	; 4
+VBlankID_Unused6 =	id(VBlank_Unused6_ptr)	; 6
+VBlankID_Level =	id(VBlank_Level_ptr)	; 8
+VBlankID_S1SS =	id(VBlank_S1SS_ptr)	; $A
+VBlankID_TitleCard =	id(VBlank_TitleCard_ptr)	; $C
+VBlankID_UnusedE =	id(VBlank_UnusedE_ptr)	; $E
+VBlankID_Pause =	id(VBlank_Pause_ptr)	; $10
+VBlankID_Fade =	id(VBlank_Fade_ptr)	; $12
+VBlankID_PCM =	id(VBlank_PCM_ptr)	; $14
+VBlankID_SSResults =	id(VBlank_SSResults_ptr)	; $16
+VBlankID_TitleCard2 =	id(VBlank_TitleCard2_ptr)	; $18
 
 ; Game modes
 offset :=	GameModeArray

@@ -51,8 +51,8 @@ Obj02_Control:
 Obj02_ControlsLock:
 		bsr.s	Tails_Display
 		bsr.w	RecordTailsMoves
-		move.b	(Primary_Angle).w,angleright(a0)
-		move.b	(Secondary_Angle).w,angleleft(a0)
+		move.b	(v_anglebuffer).w,angleright(a0)
+		move.b	(v_anglebuffer2).w,angleleft(a0)
 		bsr.w	Tails_Animate
 		tst.b	(f_playerctrl).w
 		bmi.s	loc_10CFC

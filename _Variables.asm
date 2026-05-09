@@ -415,9 +415,9 @@ Sonic_Speeds_End:
 
 v_sonframenum:		ds.b	1		; frame to display for Sonic
 			ds.b	1			; $FFFFF767 ; seems unused
-Primary_Angle:		ds.b	1
+v_anglebuffer:		ds.b	1
 			ds.b	1			; $FFFFF769 ; seems unused
-Secondary_Angle:	ds.b	1
+v_anglebuffer2:	ds.b	1
 			ds.b	1			; $FFFFF76B ; seems unused
 Obj_placement_routine:	ds.b	1
 			ds.b	1			; $FFFFF76D ; seems unused

@@ -19,7 +19,7 @@ Pause_AlreadyPaused:
 		move.b	#1,(v_snddriver_ram.f_pausemusic).w
 
 Pause_Loop:
-		move.b	#VintID_Pause,(v_vblank_routine).w
+		move.b	#VBlankID_Pause,(v_vblank_routine).w
 		bsr.w	WaitForVint
 		tst.b	(f_slomocheat).w
 		beq.s	Pause_ChkStart

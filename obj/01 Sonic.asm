@@ -78,8 +78,8 @@ Obj01_ControlsLock:
 		bsr.s	Sonic_Display
 		bsr.w	Sonic_RecordPos
 		bsr.w	Sonic_Water
-		move.b	(Primary_Angle).w,angleright(a0)
-		move.b	(Secondary_Angle).w,angleleft(a0)
+		move.b	(v_anglebuffer).w,angleright(a0)
+		move.b	(v_anglebuffer2).w,angleleft(a0)
 		tst.b	(f_wtunnelmode).w
 		beq.s	loc_FAFE
 		tst.b	obAnim(a0)

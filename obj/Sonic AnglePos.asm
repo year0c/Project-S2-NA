@@ -12,15 +12,15 @@ loc_12A14:
 		btst	#3,obStatus(a0)
 		beq.s	loc_12A2C
 		moveq	#0,d0
-		move.b	d0,(Primary_Angle).w
-		move.b	d0,(Secondary_Angle).w
+		move.b	d0,(v_anglebuffer).w
+		move.b	d0,(v_anglebuffer2).w
 		rts
 ; ---------------------------------------------------------------------------
 
 loc_12A2C:
 		moveq	#3,d0
-		move.b	d0,(Primary_Angle).w
-		move.b	d0,(Secondary_Angle).w
+		move.b	d0,(v_anglebuffer).w
+		move.b	d0,(v_anglebuffer2).w
 		move.b	obAngle(a0),d0
 		addi.b	#$20,d0
 		bpl.s	loc_12A4E
@@ -58,7 +58,7 @@ loc_12A5A:
 		move.b	obWidth(a0),d0
 		ext.w	d0
 		add.w	d0,d3
-		lea	(Primary_Angle).w,a4
+		lea	(v_anglebuffer).w,a4
 		movea.w	#$10,a3
 		move.w	#0,d6
 		bsr.w	FindFloor
@@ -73,7 +73,7 @@ loc_12A5A:
 		ext.w	d0
 		neg.w	d0
 		add.w	d0,d3
-		lea	(Secondary_Angle).w,a4
+		lea	(v_anglebuffer2).w,a4
 		movea.w	#$10,a3
 		move.w	#0,d6
 		bsr.w	FindFloor
@@ -160,10 +160,10 @@ locret_12B30:
 
 
 Sonic_Angle:
-		move.b	(Secondary_Angle).w,d2
+		move.b	(v_anglebuffer2).w,d2
 		cmp.w	d0,d1
 		ble.s	loc_12B84
-		move.b	(Primary_Angle).w,d2
+		move.b	(v_anglebuffer).w,d2
 		move.w	d0,d1
 
 loc_12B84:
@@ -194,7 +194,7 @@ Sonic_WalkVertR:
 		move.b	obHeight(a0),d0
 		ext.w	d0
 		add.w	d0,d3
-		lea	(Primary_Angle).w,a4
+		lea	(v_anglebuffer).w,a4
 		movea.w	#$10,a3
 		move.w	#0,d6
 		bsr.w	FindWall
@@ -208,7 +208,7 @@ Sonic_WalkVertR:
 		move.b	obHeight(a0),d0
 		ext.w	d0
 		add.w	d0,d3
-		lea	(Secondary_Angle).w,a4
+		lea	(v_anglebuffer2).w,a4
 		movea.w	#$10,a3
 		move.w	#0,d6
 		bsr.w	FindWall
@@ -254,7 +254,7 @@ Sonic_WalkCeiling:
 		move.b	obWidth(a0),d0
 		ext.w	d0
 		add.w	d0,d3
-		lea	(Primary_Angle).w,a4
+		lea	(v_anglebuffer).w,a4
 		movea.w	#-$10,a3
 		move.w	#$800,d6
 		bsr.w	FindFloor
@@ -269,7 +269,7 @@ Sonic_WalkCeiling:
 		move.b	obWidth(a0),d0
 		ext.w	d0
 		sub.w	d0,d3
-		lea	(Secondary_Angle).w,a4
+		lea	(v_anglebuffer2).w,a4
 		movea.w	#-$10,a3
 		move.w	#$800,d6
 		bsr.w	FindFloor
@@ -315,7 +315,7 @@ Sonic_WalkVertL:
 		ext.w	d0
 		sub.w	d0,d3
 		eori.w	#$F,d3
-		lea	(Primary_Angle).w,a4
+		lea	(v_anglebuffer).w,a4
 		movea.w	#-$10,a3
 		move.w	#$400,d6
 		bsr.w	FindWall
@@ -330,7 +330,7 @@ Sonic_WalkVertL:
 		ext.w	d0
 		sub.w	d0,d3
 		eori.w	#$F,d3
-		lea	(Secondary_Angle).w,a4
+		lea	(v_anglebuffer2).w,a4
 		movea.w	#-$10,a3
 		move.w	#$400,d6
 		bsr.w	FindWall
