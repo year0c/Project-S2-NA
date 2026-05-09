@@ -415,57 +415,59 @@ Art_Text:	bincludeEndMarker	"art/uncompressed/Level select and Debug Mode text.b
 
 
 ; ===========================================================================
-; vertical and horizontal interrupt handlers
-; VERTICAL INTERRUPT HANDLER:
+; ---------------------------------------------------------------------------
+; Vertical interrupt
+; ---------------------------------------------------------------------------
+Vint_SwitchTbl:
+Vint_Lag_ptr:		dc.w Vint_Lag-Vint_SwitchTbl	; (lag frame)
+Vint_SEGA_ptr:		dc.w Vint_SEGA-Vint_SwitchTbl	; Sega Screen
+Vint_Title_ptr:		dc.w Vint_Title-Vint_SwitchTbl	; Title Screen, Credits
+Vint_Unused6_ptr:	dc.w Vint_Unused6-Vint_SwitchTbl; (unused)
+Vint_Level_ptr:		dc.w Vint_Level-Vint_SwitchTbl	; Levels, Demos
+Vint_S1SS_ptr:		dc.w Vint_S1SS-Vint_SwitchTbl	; Special Stages
+Vint_TitleCard_ptr:	dc.w Vint_TitleCard-Vint_SwitchTbl	; Title Cards
+Vint_UnusedE_ptr:	dc.w Vint_UnusedE-Vint_SwitchTbl; (unused)
+Vint_Pause_ptr:		dc.w Vint_Pause-Vint_SwitchTbl	; Paused
+Vint_Fade_ptr:		dc.w Vint_Fade-Vint_SwitchTbl	; Palette Fade
+Vint_PCM_ptr:		dc.w Vint_PCM-Vint_SwitchTbl	; Sega Screen PCM
+Vint_SSResults_ptr:	dc.w Vint_SSResults-Vint_SwitchTbl		; Special Stage Results?
+Vint_TitleCard2_ptr:	dc.w Vint_TitleCard-Vint_SwitchTbl	; Second Title Cards?
+; ---------------------------------------------------------------------------
+
 V_Int:
-		movem.l	d0-a6,-(sp)
-		tst.b	(v_vblank_routine).w
-		beq.s	Vint_Lag
+		movem.l	d0-a6,-(sp)			; backup all registers except stack pointer (a7)
+		tst.b	(v_vblank_routine).w		; was a VBlank routine set?
+		beq.s	Vint_Lag			; if not, this is a lag frame, branch
 
-.waitforvint:
+.waitforvint:	; waits until vertical blanking is taking place
 		move.w	(vdp_control_port).l,d0
-		andi.w	#%1000,d0
+		andi.w	#8,d0
 		beq.s	.waitforvint
-		move.l	#$40000010,(vdp_control_port).l
-		move.l	(v_scrposy_vdp).w,(vdp_data_port).l
-		btst	#6,(v_megadrive).w
-		beq.s	.notPAL
-		move.w	#17930/10-1,d0
 
-.loop:
-		dbf	d0,.loop
+		move.l	#vdpComm($0000,VSRAM,WRITE),(vdp_control_port).l
+		move.l	(v_scrposy_vdp).w,(vdp_data_port).l	; send screen y-axis pos to VSRAM
+		btst	#6,(v_megadrive).w		; is Megadrive PAL?
+		beq.s	.notPAL		; if not, branch
+
+		move.w	#$700,d0
+.loop:	dbf	d0,.loop	; wait here in a loop doing nothing for a while...
 
 .notPAL:
 		move.b	(v_vblank_routine).w,d0
 		move.b	#VintID_Lag,(v_vblank_routine).w
-		move.w	#1,(f_hblank_pal).w
+		move.w	#1,(f_hblank_pal).w		; allows horizontal interrupt code to run
 		andi.w	#$3E,d0
 		move.w	Vint_SwitchTbl(pc,d0.w),d0
 		jsr	Vint_SwitchTbl(pc,d0.w)
-; loc_B5C:
+
 Vint_SoundDriver:
 		jsr	(UpdateMusic).l
-; loc_B62:
+
 VintRet:
 		addq.l	#1,(v_vblank_count).w
 		movem.l	(sp)+,d0-a6
 		rte
-; ===========================================================================
-; off_B6C:
-Vint_SwitchTbl:
-Vint_Lag_ptr:		dc.w Vint_Lag-Vint_SwitchTbl
-Vint_SEGA_ptr:		dc.w Vint_SEGA-Vint_SwitchTbl
-Vint_Title_ptr:		dc.w Vint_Title-Vint_SwitchTbl
-Vint_Unused6_ptr:	dc.w Vint_Unused6-Vint_SwitchTbl
-Vint_Level_ptr:		dc.w Vint_Level-Vint_SwitchTbl
-Vint_S1SS_ptr:		dc.w Vint_S1SS-Vint_SwitchTbl
-Vint_TitleCard_ptr:	dc.w Vint_TitleCard-Vint_SwitchTbl
-Vint_UnusedE_ptr:	dc.w Vint_UnusedE-Vint_SwitchTbl
-Vint_Pause_ptr:		dc.w Vint_Pause-Vint_SwitchTbl
-Vint_Fade_ptr:		dc.w Vint_Fade-Vint_SwitchTbl
-Vint_PCM_ptr:		dc.w Vint_PCM-Vint_SwitchTbl
-Vint_SSResults_ptr:	dc.w Vint_SSResults-Vint_SwitchTbl
-Vint_TitleCard2_ptr:	dc.w Vint_TitleCard-Vint_SwitchTbl
+
 ; ===========================================================================
 ; loc_B86: VintSub0:
 Vint_Lag:
