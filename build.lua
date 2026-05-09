@@ -7,7 +7,7 @@
 -- Set this to true to use a better compression algorithm for the DAC driver.
 -- Having this set to false will use an inferior compression algorithm that
 -- results in an accurate ROM being produced.
-local improved_dac_driver_compression = false
+local improved_dac_driver_compression = true
 
 ---------------------
 -- End of settings --
@@ -26,6 +26,13 @@ common.convert_dpcm_files_in_directory("sound/dac/dpcm")
 -- Build the ROM.
 local compression = improved_dac_driver_compression and "kosinski-optimised" or "kosinski"
 common.build_rom_and_handle_failure("s2", "s2built", "", "-p=FF -z=0," .. compression .. ",Size_of_DAC_driver_guess,after", false, "https://github.com/year0c/s2-nick-arcade-disasm")
+
+-- Append symbol table to the ROM.
+local extra_tools = common.find_tools("debug symbol generator", "https://github.com/vladikcomper/md-modules", "https://github.com/sonicretro/s1disasm", "convsym")
+if not extra_tools then
+    os.exit(false)
+end
+os.execute(extra_tools.convsym .. " s2.lst s2built.bin -input as_lst -range 0 FFFFFF -exclude -filter \"z[A-Z].+\" -a")
 
 -- Correct the ROM's header with a proper checksum and end-of-ROM value.
 common.fix_header("s2built.bin")

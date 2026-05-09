@@ -1,4 +1,4 @@
- AS V1.42 Beta [Bld 212] - Source File s2.asm - Page 1 - 08/05/26 23:21:53
+ AS V1.42 Beta [Bld 212] - Source File s2.asm - Page 1 - 08/05/26 23:38:03
 
 
        1/       0 :                     ; Disassembly originally created by drx
@@ -94699,7 +94699,7 @@ Uncompressed driver size: 1BC6h bytes.
    16854/  1FFFFF : (MACRO)              		even
    16854/  1FFFFF : 00                                          dc.b 0                          ;ds.b 1
    16856/  200000 :                     EndOfRom:
- AS V1.42 Beta [Bld 212] - Source File s2.asm - Page 2 - 08/05/26 23:21:53
+ AS V1.42 Beta [Bld 212] - Source File s2.asm - Page 2 - 08/05/26 23:38:04
 
 
   Symbol Table (* = unused):
@@ -98172,7 +98172,7 @@ Uncompressed driver size: 1BC6h bytes.
  StopSFX.trackloop :          71F6E C |  StopSFX.trackpsg :           71FC0 C |
  StopSpecialSFX :             72000 C |  StopSpecialSFX.fadedfm :     72032 C |
  StopSpecialSFX.fadedpsg :    72068 C |  Swing_Move2 :                 801A C |
-*TIME :                  "23:21:53" - |  TRUE :                           1 - |
+*TIME :                  "23:38:03" - |  TRUE :                           1 - |
  TailsAniData :               11794 C |  TailsAni_Balance :           11836 C |
  TailsAni_Blank :             118A2 C |  TailsAni_Bubble :            11888 C |
  TailsAni_Burnt :             1188F C |  TailsAni_Death :             11895 C |
@@ -100984,7 +100984,7 @@ Uncompressed driver size: 1BC6h bytes.
   10809 symbols
    1943 unused symbols
 
- AS V1.42 Beta [Bld 212] - Source File s2.asm - Page 3 - 08/05/26 23:21:53
+ AS V1.42 Beta [Bld 212] - Source File s2.asm - Page 3 - 08/05/26 23:38:04
 
 
   Defined Macros:
@@ -101066,7 +101066,7 @@ zoneanimstart                         |
 
     145 macros
 
- AS V1.42 Beta [Bld 212] - Source File s2.asm - Page 4 - 08/05/26 23:21:53
+ AS V1.42 Beta [Bld 212] - Source File s2.asm - Page 4 - 08/05/26 23:38:04
 
 
   Defined Structures/Unions:
@@ -101692,7 +101692,7 @@ SMPS_Track
  24          LoopCounters
  30          GoSubStack
 3 structures
- AS V1.42 Beta [Bld 212] - Source File s2.asm - Page 5 - 08/05/26 23:21:53
+ AS V1.42 Beta [Bld 212] - Source File s2.asm - Page 5 - 08/05/26 23:38:04
 
 
   Defined Functions:
@@ -101719,7 +101719,7 @@ min                                   | roundFloatToInteger
 extractJmpToName                      | chkop                                
 notZ80                                |
 
- AS V1.42 Beta [Bld 212] - Source File s2.asm - Page 6 - 08/05/26 23:21:53
+ AS V1.42 Beta [Bld 212] - Source File s2.asm - Page 6 - 08/05/26 23:38:04
 
 
   Code Pages:
@@ -101729,7 +101729,7 @@ STANDARD (0 changed characters)
 
 1 code page
 
-0.66 seconds assembly time
+0.67 seconds assembly time
 
   67262 lines source file
  129363 lines incl. macro expansions
