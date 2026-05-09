@@ -12,6 +12,8 @@ FixBugs	= 0
 
 AllOptimizations = 0
 ;	| If 1, enables all optimizations
+SkipChecksumCheck = 1|AllOptimizations
+;	| If 1, disables the slow bootup checksum calculation
 ZeroOffsetOptimization = 0|AllOptimizations
 ;	| If 1, makes a handful of zero-offset instructions smaller
 RemoveJmpTos = 0|AllOptimizations
@@ -319,60 +321,65 @@ PSGInitValues_End:
 
 GameProgram:
 		tst.w	(vdp_control_port).l
+
+CheckSumCheck:
+	if SkipChecksumCheck=0
+		move.w	(vdp_control_port).l,d1
+		btst	#1,d1
+		bne.s	CheckSumCheck	; wait until DMA is completed
+		; "MEGA DRIVE hard initial program" ends here.
 		btst	#6,(expansion_control).l
-		beq.s	ChecksumTest
-		cmpi.l	#"init",(v_init).w
+		beq.s	CheckSumTest
+		cmpi.l	#'init',(v_init).w ; has checksum routine already run?
 		beq.w	GameInit
 
-ChecksumTest:
-		movea.l	#EndOfHeader,a0		; start checking bytes after header ($200)
-		movea.l	#RomEndLoc,a1		; stop at end of ROM (but not really since it's half of the ROM, leftover from Sonic 1)
+CheckSumTest:
+		movea.l	#EndOfHeader,a0	; start checking bytes after the header ($200)
+		movea.l	#RomEndLoc,a1	; stop at end of ROM
 		move.l	(a1),d0
-		move.l	#S1_EndOfRom-1,d0
 		moveq	#0,d1
 
-ChecksumLoop:
+.loop:
 		add.w	(a0)+,d1
 		cmp.l	a0,d0
-		bhs.s	ChecksumLoop
-		movea.l	#Checksum,a1		; read the checksum
-		cmp.w	(a1),d1				; compare correct checksum to one in ROM
-	if 0
-		bne.w	ChecksumError		; if not equal to the one in ROM, checksum error
-	else
-		nop							; and do absolutely nothing with it
-		nop
+		bhs.s	.loop
+		movea.l	#Checksum,a1	; read the checksum
+		cmp.w	(a1),d1		; compare checksum in header to ROM
+		bne.w	CheckSumError	; if they don't match, branch
 	endif
-		lea	(v_crossresetram).w,a6
-		moveq	#0,d7
-		move.w	#bytesToLcnt(v_ram_end-v_crossresetram),d6
 
-loc_350:
+CheckSumOk:
+		lea	(v_ram_start&$FFFFFF).l,a6
+		moveq	#0,d7
+		move.w	#bytesToLcnt(v_crossresetram-v_ram_start_def),d6
+.clearRAM:
 		move.l	d7,(a6)+
-		dbf	d6,loc_350
+		dbf	d6,.clearRAM	; clear RAM ($FE00-$FFFF)
+
 		move.b	(console_version).l,d0
 		andi.b	#$C0,d0
-		move.b	d0,(v_megadrive).w
-		move.l	#"init",(v_init).w
+		move.b	d0,(v_megadrive).w ; get region setting
+		move.l	#'init',(v_init).w ; set flag so checksum won't run again
 
 GameInit:
-		lea	(v_ram_start).l,a6
+		; Clear some RAM on every boot and reset.
+		lea	(v_ram_start&$FFFFFF).l,a6
 		moveq	#0,d7
-		move.w	#(v_crossresetram-v_ram_start_def)/4-1,d6
-.clrRAM:
+		move.w	#bytesToLcnt(v_crossresetram-v_ram_start_def),d6
+.clearRAM:
 		move.l	d7,(a6)+
-		dbf	d6,.clrRAM
-		jsr	(InitDMAQueue).l
+		dbf	d6,.clearRAM	; clear RAM ($0000-$FDFF)
+		jsr		(InitDMAQueue).l
 		bsr.w	VDPSetupGame
 		bsr.w	DACDriverLoad
 		bsr.w	JoypadInit
-		move.b	#GameModeID_SegaScreen,(v_gamemode).w
+		move.b	#GameModeID_SegaScreen,(v_gamemode).w ; set Game Mode to Sega Screen
 
 MainGameLoop:
-		move.b	(v_gamemode).w,d0
-		andi.w	#GameModeID_S1End,d0	; limit to credits game mode (even though it doesn't exist)
-		jsr	GameModeArray(pc,d0.w)
-		bra.s	MainGameLoop
+		move.b	(v_gamemode).w,d0 ; load Game Mode
+		andi.w	#$1C,d0	; limit Game Mode value to $1C max (change to a maximum of 7C to add more game modes)
+		jsr	GameModeArray(pc,d0.w) ; jump to apt location in ROM
+		bra.s	MainGameLoop	; loop indefinitely
 ; ===========================================================================
 ; loc_3A8:
 GameModeArray:
@@ -382,22 +389,29 @@ GameMode_Demo:		bra.w	Level			; Demo mode ($08)
 GameMode_Level:		bra.w	Level			; Zone play mode ($0C)
 GameMode_SpecialStage:	bra.w	SpecialStage		; Special Stage play mode ($10)
 ; ===========================================================================
-; Leftover from Sonic 1, turns the screen red if the checksum check fails
-ChecksumError:
+	if SkipChecksumCheck=0
+CheckSumError:
 		jsr	(InitDMAQueue).l
 		bsr.w	VDPSetupGame
-		move.l	#$C0000000,(vdp_control_port).l
+		move.l	#$C0000000,(vdp_control_port).l ; set VDP to CRAM write
 		moveq	#bytesToWcnt(palette_size),d7
 
-Checksum_Red:
-		move.w	#cRed,(vdp_data_port).l
-		dbf	d7,Checksum_Red
+.fillred:
+		move.w	#cRed,(vdp_data_port).l ; fill palette with red
+		dbf	d7,.fillred	; repeat until CRAM is filled
 
-.loop:
-		bra.s	.loop
+.endlessloop:
+		bra.s	.endlessloop
+	endif
+
 ; ===========================================================================
-Art_Text:	binclude	"art/uncompressed/Level select and Debug Mode text.bin"
-Art_Text_End:	even
+; ---------------------------------------------------------------------------
+; Uncompressed art text for debug mode, level select, and errors
+; (formerly "menutext.bin")
+; ---------------------------------------------------------------------------
+
+Art_Text:	bincludeEndMarker	"art/uncompressed/Level select and Debug Mode text.bin"
+
 
 ; ===========================================================================
 ; vertical and horizontal interrupt handlers
@@ -2149,7 +2163,7 @@ TitleScreen:
 		lea	(vdp_data_port).l,a6
 		locVRAM	ArtTile_Level_Select_Font*tile_size,4(a6)
 		lea	(Art_Text).l,a5
-		move.w	#bytesToWcnt(Art_Text_End-Art_Text),d1
+		move.w	#bytesToWcnt(Art_Text_end-Art_Text),d1
 
 loc_32C4:
 		move.w	(a5)+,(a6)

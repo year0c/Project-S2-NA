@@ -329,3 +329,13 @@ idstart :=	0					; value to add to all IDs
 
 ; function using these variables
 id function ptr,((ptr-offset)/ptrsize+idstart)
+
+; ---------------------------------------------------------------------------
+; Macro to binclude something with an end marker
+; ---------------------------------------------------------------------------
+
+bincludeEndMarker macro path,{INTLABEL}
+__LABEL__:	label	 *
+		binclude path
+__LABEL___end:	label	 *
+		endm
