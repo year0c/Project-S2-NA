@@ -15,3 +15,5 @@ s2built.prev.bin
 # Hivebrains comment utility
 Comment.bat
 Comment.exe
+s2.lst
+sound/dac/dpcm/generated/hashes.lua

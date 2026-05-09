@@ -6,10 +6,6 @@
 ; ===========================================================================
 ; ASSEMBLY OPTIONS:
 
-EnableSRAM	  = 0	; change to 1 to enable SRAM
-BackupSRAM	  = 1
-AddressSRAM	  = 3	; 0 = odd+even; 2 = even only; 3 = odd only
-
 FixBugs	= 0
 ;	| If 1, enables various bugfixes across the game and sound driver
 ;	| See also FixMusicAndSFXDataBugs
@@ -22,6 +18,14 @@ RemoveJmpTos = 0|AllOptimizations
 ;	| If 1, many unnecessary JmpTos are removed, improving performance
 PaddingOptimization = 0|AllOptimizations
 ;	| If 1, removes about 125 KB of various superfluous padding
+
+EnableSRAM = 0
+;	| If 1, enable SRAM support
+BackupSRAM = 1
+;	| 0 = no saving (read-only SRAM); 1 = allow saving
+AddressSRAM = 3
+;	| 0 = odd+even; 2 = even only; 3 = odd only
+;	| (odd only is the most common)
 
 ; ===========================================================================
 ; AS-specific macros and assembler settings
@@ -54,6 +58,10 @@ SonicDplcVer = 2
 ; start of ROM
 
 StartOfRom:
+	if * <> 0
+		fatal "StartOfRom was $\{*} but it should be 0"
+	endif
+
 Vectors:
 		dc.l v_systemstack&$FFFFFF	; Initial stack pointer value
 		dc.l EntryPoint			; Start of program
@@ -130,99 +138,104 @@ Vectors:
 		dc.b "GM 00004049-01"		; Version (leftover from Sonic 1)
 Checksum:	dc.w $AFC7				; Checksum (leftover from Sonic 1)
 		dc.b "J               "		; I/O support
-		dc.l StartOfRom				; Start address of ROM
-ROMEndLoc:	dc.l S1_EndOfRom-1		; End address of ROM (leftover from Sonic 1)
-		dc.l v_ram_start&$FFFFFF	; Start address of RAM
-		dc.l (v_ram_end-1)&$FFFFFF	; End address of RAM
-		if EnableSRAM=1
-		dc.b $52, $41, $A0+(BackupSRAM<<6)+(AddressSRAM<<3), $20 ; Backup RAM ID
-		else
+		dc.l StartOfRom		; Start address of ROM
+RomEndLoc:	dc.l EndOfRom-1		; End address of ROM
+		dc.l $FF0000		; Start address of RAM
+		dc.l $FFFFFF		; End address of RAM
+	if EnableSRAM=1
+		dc.b "RA", $A0+(BackupSRAM<<6)+(AddressSRAM<<3), $20 ; SRAM support
+	else
 		dc.l $20202020
-		endif
-		dc.l $20202020				; Backup RAM start address
-		dc.l $20202020				; Backup RAM end address
-		dc.l $20202020				; Modem support
-		dc.b "                                                " ; Notes (unused, anything can be put in this space, but it has to be 48 bytes.)
-		dc.b "JUE             "		; Country code (region)
+	endif
+		dc.l $20202020		; SRAM start ($200001)
+		dc.l $20202020		; SRAM end ($20xxxx)
+		dc.b "                                                    " ; Notes (unused, anything can be put in this space, but it has to be 52 bytes.)
+		dc.b "JUE             " ; Region (Country code)
 EndOfHeader:
 
-; ---------------------------------------------------------------------------
+; ===========================================================================
 
 EntryPoint:
-		tst.l	(port_1_control_hi).l		; test Port A Ctrl
-		bne.s	PortA_OK
-		tst.w	(expansion_control_hi).l	; test Port C Ctrl
+		; Everything from here to just past CheckSumCheck is the standard
+		; "MEGA DRIVE hard initial program", distributed by Sega as a file
+		; called 'ICD_BLK4.PRG'.
+		; http://techdocs.exodusemulator.com/Console/SegaMegaDrive/Software.html#original-development-tools
+		tst.l	(HW_Port_1_Control-1).l		; test ports A and B control
+		bne.s	PortA_OK		; If so, branch.
+		tst.w	(HW_Expansion_Control-1).l	; test port C control
+PortA_OK:	bne.s	SkipSetup			; skip the VDP and Z80 setup code if this is a soft-reset
 
-PortA_OK:
-		bne.s	PortC_OK
-		lea	InitValues(pc),a5
+		lea	SetupValues(pc),a5	; load setup values array address
 		movem.w	(a5)+,d5-d7
 		movem.l	(a5)+,a0-a4
-		move.b	console_version-z80_bus_request(a1),d0			; get hardware version
-		andi.b	#$F,d0
-		beq.s	SkipSecurity
-		move.l	#"SEGA",security_addr-z80_bus_request(a1)
+		move.b	console_version-z80_bus_request(a1),d0	; get hardware version
+		andi.b	#$F,d0						; compare
+		beq.s	SkipSecurity					; if the console has no TMSS, skip the security stuff.
+		move.l	#"SEGA",security_addr-z80_bus_request(a1)	; satisfy the TMSS
 
 SkipSecurity:
-		move.w	(a4),d0
-		moveq	#0,d0
-		movea.l	d0,a6
-		move.l	a6,usp
-		moveq	#VDPInitValues_End-VDPInitValues-1,d1
+		move.w	(a4),d0	; clear write-pending flag in VDP (prevents issues if 68k was reset while writing a command to VDP)
+		moveq	#0,d0	; clear d0
+		movea.l	d0,a6	; clear a6
+		move.l	a6,usp	; set usp to $0
 
+		moveq	#VDPInitValues_End-VDPInitValues-1,d1	; run the following loop $18 times
 VDPInitLoop:
-		move.b	(a5)+,d5
-		move.w	d5,(a4)
-		add.w	d7,d5
+		move.b	(a5)+,d5	; add $8000 to value
+		move.w	d5,(a4)		; move value to VDP register
+		add.w	d7,d5		; next register
 		dbf	d1,VDPInitLoop
-		move.l	(a5)+,(a4)
-		move.w	d0,(a3)
-		move.w	d7,(a1)
-		move.w	d7,(a2)
+		
+		move.l	(a5)+,(a4)	; set VRAM write mode
+		move.w	d0,(a3)		; clear the VRAM
+		move.w	d7,(a1)		; stop the Z80
+		move.w	d7,(a2)		; reset the Z80
 
 WaitForZ80:
-		btst	d0,(a1)
-		bne.s	WaitForZ80
-		moveq	#Z80StartupCodeEnd-Z80StartupCodeBegin-1,d2
+		btst	d0,(a1)		; has the Z80 stopped?
+		bne.s	WaitForZ80	; if not, branch
 
+		moveq	#Z80StartupCodeEnd-Z80StartupCodeBegin-1,d2
 Z80InitLoop:
 		move.b	(a5)+,(a0)+
 		dbf	d2,Z80InitLoop
+		
 		move.w	d0,(a2)
-		move.w	d0,(a1)
-		move.w	d7,(a2)
+		move.w	d0,(a1)		; start the Z80
+		move.w	d7,(a2)		; reset the Z80
 
-ClearRAMLoop:
-		move.l	d0,-(a6)
-		dbf	d6,ClearRAMLoop
-		move.l	(a5)+,(a4)
-		move.l	(a5)+,(a4)
-		moveq	#bytesToLcnt($80),d3
+ClrRAMLoop:
+		move.l	d0,-(a6)	; clear 4 bytes of RAM
+		dbf	d6,ClrRAMLoop	; repeat until the entire RAM is clear
+		move.l	(a5)+,(a4)	; set VDP display mode and increment mode
+		move.l	(a5)+,(a4)	; set VDP to CRAM write
 
-ClearCRAMLoop:
-		move.l	d0,(a3)
-		dbf	d3,ClearCRAMLoop
-		move.l	(a5)+,(a4)
-		moveq	#bytesToLcnt($50),d4
+		moveq	#bytesToLcnt($80),d3	; set repeat times
+ClrCRAMLoop:
+		move.l	d0,(a3)	; clear 2 palettes
+		dbf	d3,ClrCRAMLoop	; repeat until the entire CRAM is clear
+		move.l	(a5)+,(a4)	; set VDP to VSRAM write
 
-ClearVSRAMLoop:
-		move.l	d0,(a3)
-		dbf	d4,ClearVSRAMLoop
-		moveq	#PSGInitValues_End-PSGInitValues-1,d5
+		moveq	#bytesToLcnt($50),d4	; set repeat times
+ClrVSRAMLoop:
+		move.l	d0,(a3)	; clear 4 bytes of VSRAM.
+		dbf	d4,ClrVSRAMLoop	; repeat until the entire VSRAM is clear
+		moveq	#PSGInitValues_End-PSGInitValues-1,d5	; set repeat times
 
 PSGInitLoop:
-		move.b	(a5)+,psg_input-vdp_data_port(a3)
-		dbf	d5,PSGInitLoop
+		move.b	(a5)+,psg_input-vdp_data_port(a3)	; reset the PSG
+		dbf	d5,PSGInitLoop	; repeat for other channels
 		move.w	d0,(a2)
-		movem.l	(a6),d0-a6
+		movem.l	(a6),d0-a6	; clear all registers
 		disable_ints
 
-PortC_OK:
-		bra.s	GameProgram
-; ---------------------------------------------------------------------------
-InitValues:	dc.w $8000		; VDP register start number
-		dc.w $3FFF		; size of RAM/4
-		dc.w $100		; VDP register diff
+SkipSetup:
+		bra.s	GameProgram	; begin game
+
+; ===========================================================================
+SetupValues:	dc.w	$8000	; VDP register start number
+		dc.w	bytesToLcnt($10000)		; size of RAM/4
+		dc.w	$100	; VDP register diff
 
 		dc.l z80_ram		; start of Z80 RAM
 		dc.l z80_bus_request	; Z80 bus request
@@ -253,60 +266,56 @@ VDPInitValues:						; values for VDP registers
 		dc.w $FFFF		; VDP $93/94 - DMA length
 		dc.w 0			; VDP $95/96 - DMA source
 		dc.b $80		; VDP $97 - DMA fill VRAM
+		dc.l $40000080		; VRAM address 0
 VDPInitValues_End:
 
-		dc.l $40000080		; value	for VRAM fill
+		dc.l	vdpComm($0000,VRAM,DMA) ; value for VRAM write mode
 
 Z80StartupCodeBegin:
-	; Z80 instructions (not the sound driver; that gets loaded later)
-	if (*)+$26 < $10000
-	save
-	CPU Z80 ; start assembling Z80 code
-	phase 0 ; pretend we're at address 0
-	xor	a	; clear a to 0
-	ld	bc,((z80_ram_end-z80_ram)-zStartupCodeEndLoc)-1 ; prepare to loop this many times
-	ld	de,zStartupCodeEndLoc+1	; initial destination address
-	ld	hl,zStartupCodeEndLoc	; initial source address
-	ld	sp,hl	; set the address the stack starts at
-	ld	(hl),a	; set first byte of the stack to 0
-	ldir		; loop to fill the stack (entire remaining available Z80 RAM) with 0
-	pop	ix	; clear ix
-	pop	iy	; clear iy
-	ld	i,a	; clear i
-	ld	r,a	; clear r
-	pop	de	; clear de
-	pop	hl	; clear hl
-	pop	af	; clear af
-	ex	af,af'	; swap af with af'
-	exx		; swap bc/de/hl with their shadow registers too
-	pop	bc	; clear bc
-	pop	de	; clear de
-	pop	hl	; clear hl
-	pop	af	; clear af
-	ld	sp,hl	; clear sp
-	di		; clear iff1 (for interrupt handler)
-	im	1	; interrupt handling mode = 1
-	ld	(hl),0E9h ; replace the first instruction with a jump to itself
-	jp	(hl)	  ; jump to the first instruction (to stay there forever)
+		; Z80 instructions (not the sound driver; that gets loaded later)
+		save
+		CPU Z80 ; start assembling Z80 code
+		phase 0 ; pretend we're at address 0
+		xor	a	; clear a to 0
+		ld	bc,((z80_ram_end-z80_ram)-zStartupCodeEndLoc)-1 ; prepare to loop this many times
+		ld	de,zStartupCodeEndLoc+1	; initial destination address
+		ld	hl,zStartupCodeEndLoc	; initial source address
+		ld	sp,hl	; set the address the stack starts at
+		ld	(hl),a	; set first byte of the stack to 0
+		ldir		; loop to fill the stack (entire remaining available Z80 RAM) with 0
+		pop	ix	; clear ix
+		pop	iy	; clear iy
+		ld	i,a	; clear i
+		ld	r,a	; clear r
+		pop	de	; clear de
+		pop	hl	; clear hl
+		pop	af	; clear af
+		ex	af,af'	; swap af with af'
+		exx		; swap bc/de/hl with their shadow registers too
+		pop	bc	; clear bc
+		pop	de	; clear de
+		pop	hl	; clear hl
+		pop	af	; clear af
+		ld	sp,hl	; clear sp
+		di		; clear iff1 (for interrupt handler)
+		im	1	; interrupt handling mode = 1
+		ld	(hl),0E9h ; replace the first instruction with a jump to itself
+		jp	(hl)	  ; jump to the first instruction (to stay there forever)
 zStartupCodeEndLoc:
-	dephase ; stop pretending
-	restore
-	padding off ; unfortunately our flags got reset so we have to set them again...
-	else ; due to an address range limitation I could work around but don't think is worth doing so:
-	message "Warning: using pre-assembled Z80 startup code."
-	dc.w $AF01,$D91F,$1127,$0021,$2600,$F977,$EDB0,$DDE1,$FDE1,$ED47,$ED4F,$D1E1,$F108,$D9C1,$D1E1,$F1F9,$F3ED,$5636,$E9E9
-	endif
+		dephase ; stop pretending
+		restore
+		padding off ; unfortunately our flags got reset so we have to set them again...
 Z80StartupCodeEnd:
 
-		dc.w $8104				; VDP display mode
-		dc.w $8F02				; VDP increment
-		dc.l $C0000000				; value	for CRAM Write mode
-		dc.l $40000010				; value	for VSRAM write	mode
+		dc.w	$8104	; value for VDP display mode
+		dc.w	$8F02	; value for VDP increment
+		dc.l	vdpComm($0000,CRAM,WRITE)	; value for CRAM write mode
+		dc.l	vdpComm($0000,VSRAM,WRITE)	; value for VSRAM write mode
 
 PSGInitValues:
-		dc.b  $9F, $BF,	$DF, $FF		; values for PSG channel volumes
+		dc.b $9F, $BF, $DF, $FF	; values for PSG channel volumes
 PSGInitValues_End:
-; ---------------------------------------------------------------------------
+; ===========================================================================
 
 GameProgram:
 		tst.w	(vdp_control_port).l
@@ -317,7 +326,7 @@ GameProgram:
 
 ChecksumTest:
 		movea.l	#EndOfHeader,a0		; start checking bytes after header ($200)
-		movea.l	#ROMEndLoc,a1		; stop at end of ROM (but not really since it's half of the ROM, leftover from Sonic 1)
+		movea.l	#RomEndLoc,a1		; stop at end of ROM (but not really since it's half of the ROM, leftover from Sonic 1)
 		move.l	(a1),d0
 		move.l	#S1_EndOfRom-1,d0
 		moveq	#0,d1
