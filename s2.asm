@@ -381,8 +381,9 @@ MainGameLoop:
 		jsr	GameModeArray(pc,d0.w) ; jump to apt location in ROM
 		bra.s	MainGameLoop	; loop indefinitely
 ; ===========================================================================
-; loc_3A8:
+
 GameModeArray:
+
 GameMode_SegaScreen:	bra.w	SegaScreen		; SEGA screen mode ($00)
 GameMode_TitleScreen:	bra.w	TitleScreen		; Title screen mode ($04)
 GameMode_Demo:		bra.w	Level			; Demo mode ($08)
