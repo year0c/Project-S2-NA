@@ -41,6 +41,10 @@ PaddingOptimization = 0|AllOptimizations
 	include	"_Variables.asm"
 
 ; ===========================================================================
+; Include debugger macros and functions
+	include "ErrorHandler/Debugger.asm"
+
+; ===========================================================================
 ; Expressing sprite mappings and DPLCs in a portable and human-readable form
 SonicMappingsVer = 2
 SonicDplcVer = 2
@@ -142,12 +146,6 @@ ROMEndLoc:	dc.l S1_EndOfRom-1		; End address of ROM (leftover from Sonic 1)
 		dc.b "JUE             "		; Country code (region)
 EndOfHeader:
 
-; ---------------------------------------------------------------------------
-
-ErrorTrap:
-		nop
-		nop
-		bra.s	ErrorTrap
 ; ---------------------------------------------------------------------------
 
 EntryPoint:
@@ -389,190 +387,6 @@ Checksum_Red:
 .loop:
 		bra.s	.loop
 ; ===========================================================================
-
-BusError:
-		move.b	#2,(v_errortype).w
-		bra.s	ErrorMsg_TwoAddresses
-; ---------------------------------------------------------------------------
-
-AddressError:
-		move.b	#4,(v_errortype).w
-		bra.s	ErrorMsg_TwoAddresses
-; ---------------------------------------------------------------------------
-
-IllegalInstr:
-		move.b	#6,(v_errortype).w
-		addq.l	#2,2(sp)
-		bra.s	ErrorMessage
-; ---------------------------------------------------------------------------
-
-ZeroDivide:
-		move.b	#8,(v_errortype).w
-		bra.s	ErrorMessage
-; ---------------------------------------------------------------------------
-
-ChkInstr:
-		move.b	#$A,(v_errortype).w
-		bra.s	ErrorMessage
-; ---------------------------------------------------------------------------
-
-TrapvInstr:
-		move.b	#$C,(v_errortype).w
-		bra.s	ErrorMessage
-; ---------------------------------------------------------------------------
-
-PrivilegeViol:
-		move.b	#$E,(v_errortype).w
-		bra.s	ErrorMessage
-; ---------------------------------------------------------------------------
-
-Trace:
-		move.b	#$10,(v_errortype).w
-		bra.s	ErrorMessage
-; ---------------------------------------------------------------------------
-
-Line1010Emu:
-		move.b	#$12,(v_errortype).w
-		addq.l	#2,2(sp)
-		bra.s	ErrorMessage
-; ---------------------------------------------------------------------------
-
-Line1111Emu:
-		move.b	#$14,(v_errortype).w
-		addq.l	#2,2(sp)
-		bra.s	ErrorMessage
-; ---------------------------------------------------------------------------
-
-ErrorExcept:
-		move.b	#0,(v_errortype).w
-		bra.s	ErrorMessage
-; ---------------------------------------------------------------------------
-
-ErrorMsg_TwoAddresses:
-		disable_ints
-		addq.w	#2,sp
-		move.l	(sp)+,(v_spbuffer).w
-		addq.w	#2,sp
-		movem.l	d0-sp,(v_regbuffer).w
-		bsr.w	ShowErrorMsg
-		move.l	2(sp),d0
-		bsr.w	ShowErrAddress
-		move.l	(v_spbuffer).w,d0
-		bsr.w	ShowErrAddress
-		bra.s	ErrorMsg_Wait
-; ---------------------------------------------------------------------------
-
-ErrorMessage:
-		disable_ints
-		movem.l	d0-sp,(v_regbuffer).w
-		bsr.w	ShowErrorMsg
-		move.l	2(sp),d0
-		bsr.w	ShowErrAddress
-
-ErrorMsg_Wait:
-		bsr.w	ErrorWaitForC
-		movem.l	(v_regbuffer).w,d0-sp
-		enable_ints
-		rte
-
-; =============== S U B	R O U T	I N E =======================================
-
-
-ShowErrorMsg:
-		lea	(vdp_data_port).l,a6
-		locVRAM	ArtTile_Error_Handler_Font*tile_size
-		lea	(Art_Text).l,a0
-		move.w	#bytesToWcnt(Art_Text_End-Art_Text-tile_size),d1 ; strangely, this does not load the final tile
-
-.loadgfx:
-		move.w	(a0)+,(a6)
-		dbf	d1,.loadgfx
-
-		moveq	#0,d0
-		move.b	(v_errortype).w,d0
-		move.w	ErrorText(pc,d0.w),d0
-		lea	ErrorText(pc,d0.w),a0
-		locVRAM	vram_fg+$604
-		moveq	#19-1,d1
-
-.showchars:
-		moveq	#0,d0
-		move.b	(a0)+,d0
-		addi.w	#-'0'+ArtTile_Error_Handler_Font,d0 ; rebase from ASCII to a VRAM index
-		move.w	d0,(a6)
-		dbf	d1,.showchars	; repeat for number of characters
-		rts
-; End of function ShowErrorMsg
-
-; ---------------------------------------------------------------------------
-ErrorText:
-		dc.w .exception-ErrorText	; 0
-		dc.w .bus-ErrorText		; 2
-		dc.w .address-ErrorText		; 4
-		dc.w .illinstruct-ErrorText	; 6
-		dc.w .zerodivide-ErrorText	; 8
-		dc.w .chkinstruct-ErrorText	; $A
-		dc.w .trapv-ErrorText		; $C
-		dc.w .privilege-ErrorText	; $E
-		dc.w .trace-ErrorText		; $10
-		dc.w .line1010-ErrorText	; $12
-		dc.w .line1111-ErrorText	; $14
-.exception:	dc.b "ERROR EXCEPTION    "
-.bus:		dc.b "BUS ERROR          "
-.address:	dc.b "ADDRESS ERROR      "
-.illinstruct:	dc.b "ILLEGAL INSTRUCTION"
-.zerodivide:	dc.b "@ERO DIVIDE        "
-.chkinstruct:	dc.b "CHK INSTRUCTION    "
-.trapv:		dc.b "TRAPV INSTRUCTION  "
-.privilege:	dc.b "PRIVILEGE VIOLATION"
-.trace:		dc.b "TRACE              "
-.line1010:	dc.b "LINE 1010 EMULATOR "
-.line1111:	dc.b "LINE 1111 EMULATOR "
-		even
-
-; =============== S U B	R O U T	I N E =======================================
-
-
-ShowErrAddress:
-		move.w	#ArtTile_Error_Handler_Font+10,(a6)	; display "$" symbol
-		moveq	#8-1,d2
-
-ShowErrAddress_DigitLoop:
-		rol.l	#4,d0
-		bsr.s	ShowErrDigit
-		dbf	d2,ShowErrAddress_DigitLoop
-		rts
-; End of function ShowErrAddress
-
-
-; =============== S U B	R O U T	I N E =======================================
-
-
-ShowErrDigit:
-		move.w	d0,d1
-		andi.w	#$F,d1
-		cmpi.w	#$A,d1
-		blo.s	ShowErrDigit_NoOverflow
-		addq.w	#7,d1		; add 7 for characters A-F
-
-ShowErrDigit_NoOverflow:
-		addi.w	#ArtTile_Error_Handler_Font,d1
-		move.w	d1,(a6)
-		rts
-; End of function ShowErrDigit
-
-
-; =============== S U B	R O U T	I N E =======================================
-
-
-ErrorWaitForC:
-		bsr.w	ReadJoypads
-		cmpi.b	#btnC,(v_jpadpress1).w ; is button C pressed?
-		bne.w	ErrorWaitForC	; if not, branch
-		rts
-; End of function ErrorWaitForC
-
-; ---------------------------------------------------------------------------
 Art_Text:	binclude	"art/uncompressed/Level select and Debug Mode text.bin"
 Art_Text_End:	even
 
@@ -17022,6 +16836,13 @@ Nem_EndStH:	binclude	"art/nemesis/S1/Ending - StH Logo.nem"
 		even
 
 	if PaddingOptimization=0
+
+; --------------------------------------------------------------
+; Debugging modules
+; --------------------------------------------------------------
+
+		include "ErrorHandler/ErrorHandler.asm"
+
 ; --------------------------------------------------------------------------------------
 ; ToeJam & Earl REV00 data, likely due to it once occupying the cartridge, best
 ; just to remove it given it takes up ONE TENTH of the cartridge space
