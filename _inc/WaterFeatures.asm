@@ -38,7 +38,7 @@ locret_403E:
 WaterEffects:
 		tst.b	(Water_flag).w
 		beq.s	locret_4094
-		tst.b	(Deform_lock).w
+		tst.b	(f_nobgscroll).w
 		bne.s	loc_4058
 		cmpi.b	#6,(v_player+obRoutine).w
 		bhs.s	loc_4058

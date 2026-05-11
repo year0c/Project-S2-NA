@@ -3,12 +3,12 @@
 ; LoadTilesAsYouMove_BGOnly:
 		lea	(vdp_control_port).l,a5
 		lea	(vdp_data_port).l,a6
-		lea	(Scroll_flags_BG).w,a2
+		lea	(v_bg1_scroll_flags).w,a2
 		lea	(Camera_BG_X_pos).w,a3
 		lea	(v_lvllayout_bg).w,a4
 		move.w	#$6000,d2
 		bsr.w	DrawBGScrollBlock1
-		lea	(Scroll_flags_BG2).w,a2
+		lea	(v_bg2_scroll_flags).w,a2
 		lea	(Camera_BG2_X_pos).w,a3
 		bra.w	DrawBGScrollBlock2
 

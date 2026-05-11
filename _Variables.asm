@@ -179,17 +179,17 @@ Verti_block_crossed_flag_P2:	ds.b	1		; toggles between 0 and $10 when you cross 
 Block_Crossed_Flags_P2_End:
 
 Scroll_Flags_All:
-Scroll_flags:		ds.w	1	; bitfield ; bit 0 = redraw top row, bit 1 = redraw bottom row, bit 2 = redraw left-most column, bit 3 = redraw right-most column
-Scroll_flags_BG:	ds.w	1	; bitfield ; bits 0-3 as above, bit 4 = redraw top row (except leftmost block), bit 5 = redraw bottom row (except leftmost block), bits 6-7 = as bits 0-1
-Scroll_flags_BG2:	ds.w	1	; bitfield ; essentially unused; bit 0 = redraw left-most column, bit 1 = redraw right-most column
-Scroll_flags_BG3:	ds.w	1	; bitfield ; for CPZ; bits 0-3 as Scroll_flags_BG but using Y-dependent BG camera; bits 4-5 = bits 2-3; bits 6-7 = bits 2-3
+v_fg_scroll_flags:		ds.w	1	; bitfield ; bit 0 = redraw top row, bit 1 = redraw bottom row, bit 2 = redraw left-most column, bit 3 = redraw right-most column
+v_bg1_scroll_flags:	ds.w	1	; bitfield ; bits 0-3 as above, bit 4 = redraw top row (except leftmost block), bit 5 = redraw bottom row (except leftmost block), bits 6-7 = as bits 0-1
+v_bg2_scroll_flags:	ds.w	1	; bitfield ; essentially unused; bit 0 = redraw left-most column, bit 1 = redraw right-most column
+v_bg3_scroll_flags:	ds.w	1	; bitfield ; for CPZ; bits 0-3 as v_bg1_scroll_flags but using Y-dependent BG camera; bits 4-5 = bits 2-3; bits 6-7 = bits 2-3
 Scroll_Flags_All_End:
 
 Scroll_Flags_All_P2:
-Scroll_flags_P2:	ds.w	1	; bitfield ; bit 0 = redraw top row, bit 1 = redraw bottom row, bit 2 = redraw left-most column, bit 3 = redraw right-most column
-Scroll_flags_BG_P2:	ds.w	1	; bitfield ; bits 0-3 as above, bit 4 = redraw top row (except leftmost block), bit 5 = redraw bottom row (except leftmost block), bits 6-7 = as bits 0-1
-Scroll_flags_BG2_P2:ds.w	1	; bitfield ; essentially unused; bit 0 = redraw left-most column, bit 1 = redraw right-most column
-Scroll_flags_BG3_P2:ds.w	1	; bitfield ; for CPZ; bits 0-3 as Scroll_flags_BG but using Y-dependent BG camera; bits 4-5 = bits 2-3; bits 6-7 = bits 2-3
+v_fg_scroll_flags_p2:	ds.w	1	; bitfield ; bit 0 = redraw top row, bit 1 = redraw bottom row, bit 2 = redraw left-most column, bit 3 = redraw right-most column
+v_bg1_scroll_flags_p2:	ds.w	1	; bitfield ; bits 0-3 as above, bit 4 = redraw top row (except leftmost block), bit 5 = redraw bottom row (except leftmost block), bits 6-7 = as bits 0-1
+v_bg2_scroll_flags_p2:ds.w	1	; bitfield ; essentially unused; bit 0 = redraw left-most column, bit 1 = redraw right-most column
+v_bg3_scroll_flags_p2:ds.w	1	; bitfield ; for CPZ; bits 0-3 as v_bg1_scroll_flags but using Y-dependent BG camera; bits 4-5 = bits 2-3; bits 6-7 = bits 2-3
 Scroll_Flags_All_P2_End:
 
 Camera_Positions_Copy:
@@ -264,7 +264,7 @@ Camera_Y_pos_bias_End:
 Camera_Y_pos_bias_P2:	ds.w	1	; for Tails
 Camera_Y_pos_bias_P2_End:
 
-Deform_lock:		ds.b	1		; set to 1 to stop all deformation
+f_nobgscroll:		ds.b	1		; set to 1 to stop all deformation
 			ds.b	1		; $FFFFEEDD ; seems unused
 Camera_Max_Y_Pos_Changing:	ds.b	1
 Dynamic_Resize_Routine:	ds.b	1

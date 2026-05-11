@@ -220,7 +220,7 @@ loc_12170:
 		move.w	#0,obVelY(a0)
 		move.w	#0,obVelX(a0)
 		move.w	#0,obInertia(a0)
-		move.b	#1,(Deform_lock).w
+		move.b	#1,(f_nobgscroll).w
 		movea.l	(sp)+,a0
 		rts
 ; ---------------------------------------------------------------------------

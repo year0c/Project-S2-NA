@@ -585,7 +585,7 @@ loc_D48:
 		movem.l	d0-d7,(Camera_RAM_copy).w
 		movem.l	(Camera_X_pos_P2).w,d0-d7
 		movem.l	d0-d7,(Camera_P2_copy).w
-		movem.l	(Scroll_flags).w,d0-d3
+		movem.l	(v_fg_scroll_flags).w,d0-d3
 		movem.l	d0-d3,(Scroll_flags_copy).w
 		move.l	(v_bg3scrposy_vdp).w,(Camera_X_pos_copy).w
 		cmpi.b	#92,(v_hblank_line).w
@@ -654,7 +654,7 @@ loc_F08:
 		startZ80
 		movem.l	(Camera_RAM).w,d0-d7
 		movem.l	d0-d7,(Camera_RAM_copy).w
-		movem.l	(Scroll_flags).w,d0-d1
+		movem.l	(v_fg_scroll_flags).w,d0-d1
 		movem.l	d0-d1,(Scroll_flags_copy).w
 		bsr.w	LoadTilesAsYouMove
 		jsr	(HudUpdate).l
@@ -2881,8 +2881,8 @@ Level_SkipTtlCard:
 		moveq	#palid_SonicTails,d0
 		bsr.w	PalLoad1
 		bsr.w	LevelSizeLoad
-		bsr.w	DeformBGLayer
-		bset	#2,(Scroll_flags).w
+		bsr.w	DeformLayers
+		bset	#2,(v_fg_scroll_flags).w
 		bsr.w	MainLevelLoadBlock
 		jsr	(LoadAnimatedBlocks).l
 		bsr.w	LoadTilesFromStart
@@ -3039,7 +3039,7 @@ Level_MainLoop:
 		bhs.s	Level_SkipScroll
 
 Level_DoScroll:
-		bsr.w	DeformBGLayer
+		bsr.w	DeformLayers
 
 Level_SkipScroll:
 		bsr.w	ChangeWaterSurfacePos
@@ -3750,14 +3750,14 @@ byte_5709:	dc.b   8,  2,  4,$FF,  2,  3,  8,$FF,  4,  2,  2,  3,  8,$FD,  4,  2
 
 
 LevelSizeLoad:
-		clr.w	(Scroll_flags).w
-		clr.w	(Scroll_flags_BG).w
-		clr.w	(Scroll_flags_BG2).w
-		clr.w	(Scroll_flags_BG3).w
-		clr.w	(Scroll_flags_P2).w
-		clr.w	(Scroll_flags_BG_P2).w
-		clr.w	(Scroll_flags_BG2_P2).w
-		clr.w	(Scroll_flags_BG3_P2).w
+		clr.w	(v_fg_scroll_flags).w
+		clr.w	(v_bg1_scroll_flags).w
+		clr.w	(v_bg2_scroll_flags).w
+		clr.w	(v_bg3_scroll_flags).w
+		clr.w	(v_fg_scroll_flags_p2).w
+		clr.w	(v_bg1_scroll_flags_p2).w
+		clr.w	(v_bg2_scroll_flags_p2).w
+		clr.w	(v_bg3_scroll_flags_p2).w
 		clr.w	(Scroll_flags_copy).w
 		clr.w	(Scroll_flags_BG_copy).w
 		clr.w	(Scroll_flags_BG2_copy).w
@@ -3766,7 +3766,7 @@ LevelSizeLoad:
 		clr.w	(Scroll_flags_BG_copy_P2).w
 		clr.w	(Scroll_flags_BG2_copy_P2).w
 		clr.w	(Scroll_flags_BG3_copy_P2).w
-		clr.b	(Deform_lock).w
+		clr.b	(f_nobgscroll).w
 		moveq	#0,d0
 		move.b	d0,(Dynamic_Resize_Routine).w
 		move.w	(v_zone).w,d0

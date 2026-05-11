@@ -2,27 +2,25 @@
 ; Background layer deformation subroutines
 ; ---------------------------------------------------------------------------
 
-; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
-
-DeformBGLayer:
-		tst.b	(Deform_lock).w
-		beq.s	loc_5AA4
+DeformLayers:
+		tst.b	(f_nobgscroll).w
+		beq.s	.bgscroll
 		rts
-; ---------------------------------------------------------------------------
+; ===========================================================================
 
-loc_5AA4:
-		clr.w	(Scroll_flags).w
-		clr.w	(Scroll_flags_BG).w
-		clr.w	(Scroll_flags_BG2).w
-		clr.w	(Scroll_flags_BG3).w
-		clr.w	(Scroll_flags_P2).w
-		clr.w	(Scroll_flags_BG_P2).w
-		clr.w	(Scroll_flags_BG2_P2).w
-		clr.w	(Scroll_flags_BG3_P2).w
+	.bgscroll:
+		clr.w	(v_fg_scroll_flags).w
+		clr.w	(v_bg1_scroll_flags).w
+		clr.w	(v_bg2_scroll_flags).w
+		clr.w	(v_bg3_scroll_flags).w
+		clr.w	(v_fg_scroll_flags_p2).w
+		clr.w	(v_bg1_scroll_flags_p2).w
+		clr.w	(v_bg2_scroll_flags_p2).w
+		clr.w	(v_bg3_scroll_flags_p2).w
 		lea	(v_player).w,a0
 		lea	(Camera_RAM).w,a1
 		lea	(Horiz_block_crossed_flag).w,a2
-		lea	(Scroll_flags).w,a3
+		lea	(v_fg_scroll_flags).w,a3
 		lea	(Camera_X_pos_diff).w,a4
 		lea	(Horiz_scroll_delay_val).w,a5
 		lea	(Sonic_Pos_Record_Buf).w,a6
@@ -36,7 +34,7 @@ loc_5AA4:
 		lea	(v_player2).w,a0
 		lea	(Camera_X_pos_P2).w,a1
 		lea	(Horiz_block_crossed_flag_P2).w,a2
-		lea	(Scroll_flags_P2).w,a3
+		lea	(v_fg_scroll_flags_p2).w,a3
 		lea	(Camera_BG_Y_pos_diff).w,a4
 		lea	(Horiz_scroll_delay_val_P2).w,a5
 		lea	(Tails_Pos_Record_Buf_Dup).w,a6
@@ -55,7 +53,7 @@ loc_5B2A:
 		add.w	d0,d0
 		move.w	Deform_Index(pc,d0.w),d0
 		jmp	Deform_Index(pc,d0.w)
-; End of function DeformBGLayer
+; End of function DeformLayers
 
 ; ---------------------------------------------------------------------------
 Deform_Index:	dc.w Deform_GHZ-Deform_Index
@@ -525,11 +523,11 @@ Deform_Unk:						; unknown BG deform
 		moveq	#4,d6
 		bsr.w	ScrollBlock5
 		move.w	(Camera_BG_Y_pos).w,(v_bgscrposy_vdp).w
-		move.b	(Scroll_flags_BG).w,d0
-		or.b	(Scroll_flags_BG2).w,d0
-		move.b	d0,(Scroll_flags_BG3).w
-		clr.b	(Scroll_flags_BG).w
-		clr.b	(Scroll_flags_BG2).w
+		move.b	(v_bg1_scroll_flags).w,d0
+		or.b	(v_bg2_scroll_flags).w,d0
+		move.b	d0,(v_bg3_scroll_flags).w
+		clr.b	(v_bg1_scroll_flags).w
+		clr.b	(v_bg2_scroll_flags).w
 		lea	(v_bgscroll_buffer).w,a1
 		move.w	(Camera_BG_X_pos).w,d0
 		neg.w	d0
@@ -1396,12 +1394,12 @@ ScrollBlock1:
 		eori.b	#16,(Horiz_block_crossed_flag_BG).w
 		sub.l	d2,d0
 		bpl.s	loc_66E4
-		bset	#2,(Scroll_flags_BG).w
+		bset	#2,(v_bg1_scroll_flags).w
 		bra.s	loc_66EA
 ; ---------------------------------------------------------------------------
 
 loc_66E4:
-		bset	#3,(Scroll_flags_BG).w
+		bset	#3,(v_bg1_scroll_flags).w
 
 loc_66EA:
 		move.l	(Camera_BG_Y_pos).w,d3
@@ -1417,12 +1415,12 @@ loc_66EA:
 		eori.b	#16,(Verti_block_crossed_flag_BG).w
 		sub.l	d3,d0
 		bpl.s	loc_6718
-		bset	#0,(Scroll_flags_BG).w
+		bset	#0,(v_bg1_scroll_flags).w
 		rts
 ; ---------------------------------------------------------------------------
 
 loc_6718:
-		bset	#1,(Scroll_flags_BG).w
+		bset	#1,(v_bg1_scroll_flags).w
 
 locret_671E:
 		rts
@@ -1446,13 +1444,13 @@ ScrollBlock2:
 		eori.b	#16,(Verti_block_crossed_flag_BG).w
 		sub.l	d3,d0
 		bpl.s	loc_674C
-		bset	d6,(Scroll_flags_BG).w
+		bset	d6,(v_bg1_scroll_flags).w
 		rts
 ; ---------------------------------------------------------------------------
 
 loc_674C:
 		addq.b	#1,d6
-		bset	d6,(Scroll_flags_BG).w
+		bset	d6,(v_bg1_scroll_flags).w
 
 locret_6752:
 		rts
@@ -1471,12 +1469,12 @@ ScrollBlock3:
 		eori.b	#16,(Verti_block_crossed_flag_BG).w
 		sub.w	d3,d0
 		bpl.s	loc_677C
-		bset	#0,(Scroll_flags_BG).w
+		bset	#0,(v_bg1_scroll_flags).w
 		rts
 ; ---------------------------------------------------------------------------
 
 loc_677C:
-		bset	#1,(Scroll_flags_BG).w
+		bset	#1,(v_bg1_scroll_flags).w
 
 locret_6782:
 		rts
@@ -1498,13 +1496,13 @@ ScrollBlock4:
 		eori.b	#16,(Horiz_block_crossed_flag_BG).w
 		sub.l	d2,d0
 		bpl.s	loc_67B0
-		bset	d6,(Scroll_flags_BG).w
+		bset	d6,(v_bg1_scroll_flags).w
 		bra.s	locret_67B6
 ; ---------------------------------------------------------------------------
 
 loc_67B0:
 		addq.b	#1,d6
-		bset	d6,(Scroll_flags_BG).w
+		bset	d6,(v_bg1_scroll_flags).w
 
 locret_67B6:
 		rts
@@ -1528,13 +1526,13 @@ ScrollBlock5:
 		eori.b	#16,(Horiz_block_crossed_flag_BG2).w
 		sub.l	d2,d0
 		bpl.s	loc_67E4
-		bset	d6,(Scroll_flags_BG2).w
+		bset	d6,(v_bg2_scroll_flags).w
 		bra.s	locret_67EA
 ; ---------------------------------------------------------------------------
 
 loc_67E4:
 		addq.b	#1,d6
-		bset	d6,(Scroll_flags_BG2).w
+		bset	d6,(v_bg2_scroll_flags).w
 
 locret_67EA:
 		rts
@@ -1558,13 +1556,13 @@ ScrollBlock6:
 		eori.b	#16,(Horiz_block_crossed_flag_BG3).w
 		sub.l	d2,d0
 		bpl.s	loc_6818
-		bset	d6,(Scroll_flags_BG3).w
+		bset	d6,(v_bg3_scroll_flags).w
 		bra.s	locret_681E
 ; ---------------------------------------------------------------------------
 
 loc_6818:
 		addq.b	#1,d6
-		bset	d6,(Scroll_flags_BG3).w
+		bset	d6,(v_bg3_scroll_flags).w
 
 locret_681E:
 		rts
