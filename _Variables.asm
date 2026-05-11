@@ -2,7 +2,7 @@
 
 ; Variables (v) and Flags (f)
 
-	phase ramaddr ( $FFFF0000 )
+	dsset ramaddr ( $FFFF0000 )
 v_ram_start_def:
 v_ram_start:		equ	v_ram_start_def&$FFFFFF	; 24-bit addressing
 
