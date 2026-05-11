@@ -4,7 +4,7 @@
 ChangeWaterSurfacePos:
 		tst.b	(Water_flag).w
 		beq.s	locret_403E
-		move.w	(Camera_X_pos).w,d1
+		move.w	(v_screenposx).w,d1
 	if FixBugs
 		; This function can cause the water surface's to be cut off at the
 		; left when the game is paused. This is because this function pushes
@@ -52,7 +52,7 @@ loc_4058:
 		add.w	(v_waterpos2).w,d0
 		move.w	d0,(v_waterpos1).w
 		move.w	(v_waterpos1).w,d0
-		sub.w	(Camera_Y_pos).w,d0
+		sub.w	(v_screenposy).w,d0
 		bhs.s	loc_4086
 		tst.w	d0
 		bpl.s	loc_4086
@@ -124,7 +124,7 @@ locret_40F6:
 ; ---------------------------------------------------------------------------
 
 S1DynWater_LZ1:						; leftover from Sonic 1
-		move.w	(Camera_X_pos).w,d0
+		move.w	(v_screenposx).w,d0
 		move.b	(v_wtr_routine).w,d2
 		bne.s	loc_4164
 		move.w	#$B8,d1
@@ -181,7 +181,7 @@ locret_4188:
 ; ---------------------------------------------------------------------------
 
 DynWater_HPZ2:
-		move.w	(Camera_X_pos).w,d0		; leftover from Sonic 1's LZ2
+		move.w	(v_screenposx).w,d0		; leftover from Sonic 1's LZ2
 		move.w	#$328,d1
 		cmpi.w	#$500,d0
 		blo.s	loc_41A6
@@ -196,7 +196,7 @@ loc_41A6:
 ; ---------------------------------------------------------------------------
 
 DynWater_HPZ3:
-		move.w	(Camera_X_pos).w,d0		; Leftover from Sonic 1's LZ3
+		move.w	(v_screenposx).w,d0		; Leftover from Sonic 1's LZ3
 		move.b	(v_wtr_routine).w,d2
 		bne.s	loc_41F2
 		move.w	#$900,d1
@@ -299,7 +299,7 @@ locret_42AE:
 
 DynWater_HPZ4:
 		move.w	#$228,d1			; Leftover from Sonic 1's SBZ3
-		cmpi.w	#$F00,(Camera_X_pos).w
+		cmpi.w	#$F00,(v_screenposx).w
 		blo.s	loc_42C0
 		move.w	#$4C8,d1
 

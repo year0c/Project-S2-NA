@@ -264,11 +264,11 @@ S1SS_FixCamera_PB:
 		sub.w	d0,(Camera_RAM).w
 
 .loc_1A606:
-		move.w	(Camera_Y_pos).w,d0
+		move.w	(v_screenposy).w,d0
 		subi.w	#$70,d2
 		blo.s	.locret_1A616
 		sub.w	d2,d0
-		sub.w	d0,(Camera_Y_pos).w
+		sub.w	d0,(v_screenposy).w
 
 .locret_1A616:
 		rts

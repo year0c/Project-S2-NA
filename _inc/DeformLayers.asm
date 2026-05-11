@@ -25,29 +25,29 @@ DeformLayers:
 		lea	(Horiz_scroll_delay_val).w,a5
 		lea	(Sonic_Pos_Record_Buf).w,a6
 		bsr.w	ScrollHorizontal
-		lea	(Camera_Y_pos).w,a1
+		lea	(v_screenposy).w,a1
 		lea	(Verti_block_crossed_flag).w,a2
 		lea	(Camera_Y_pos_diff).w,a4
 		bsr.w	ScrollVertical
 		tst.w	(Two_player_mode).w
 		beq.s	loc_5B2A
 		lea	(v_player2).w,a0
-		lea	(Camera_X_pos_P2).w,a1
+		lea	(v_screenposx_p2).w,a1
 		lea	(Horiz_block_crossed_flag_P2).w,a2
 		lea	(v_fg_scroll_flags_p2).w,a3
 		lea	(Camera_BG_Y_pos_diff).w,a4
 		lea	(Horiz_scroll_delay_val_P2).w,a5
 		lea	(Tails_Pos_Record_Buf_Dup).w,a6
 		bsr.w	ScrollHorizontal
-		lea	(Camera_Y_pos_P2).w,a1
+		lea	(v_screenposy_p2).w,a1
 		lea	(Verti_block_crossed_flag_P2).w,a2
 		lea	(Camera_X_pos_diff_P2).w,a4
 		bsr.w	ScrollVertical
 
 loc_5B2A:
 		bsr.w	DynScreenResizeLoad
-		move.w	(Camera_Y_pos).w,(v_scrposy_vdp).w
-		move.w	(Camera_BG_Y_pos).w,(v_bgscrposy_vdp).w
+		move.w	(v_screenposy).w,(v_scrposy_vdp).w
+		move.w	(v_bgscreenposy).w,(v_bgscrposy_vdp).w
 		moveq	#0,d0
 		move.b	(v_zone).w,d0
 		add.w	d0,d0
@@ -82,7 +82,7 @@ Deform_GHZ:
 		moveq	#0,d6
 		bsr.w	ScrollBlock5
 		lea	(v_hscrolltablebuffer).w,a1
-		move.w	(Camera_Y_pos).w,d0
+		move.w	(v_screenposy).w,d0
 		andi.w	#$7FF,d0
 		lsr.w	#5,d0
 		neg.w	d0
@@ -186,7 +186,7 @@ Deform_GHZ_2P:
 		moveq	#0,d6
 		bsr.w	ScrollBlock5
 		lea	(v_hscrolltablebuffer).w,a1
-		move.w	(Camera_Y_pos).w,d0
+		move.w	(v_screenposy).w,d0
 		andi.w	#$7FF,d0
 		lsr.w	#5,d0
 		neg.w	d0
@@ -303,7 +303,7 @@ loc_5D52:
 		asl.l	#7,d4
 		add.l	d4,(Camera_BG2_X_pos_P2).w
 		lea	(v_hscrolltablebuffer+$1C0).w,a1
-		move.w	(Camera_Y_pos_P2).w,d0
+		move.w	(v_screenposy_p2).w,d0
 		andi.w	#$7FF,d0
 		lsr.w	#5,d0
 		neg.w	d0
@@ -317,10 +317,10 @@ loc_5D98:
 		lsr.w	#1,d4
 		move.w	d0,(v_bg3scrposx_vdp).w
 		subi.w	#224,(v_bg3scrposx_vdp).w
-		move.w	(Camera_Y_pos_P2).w,(v_bg3scrposy_vdp).w
+		move.w	(v_screenposy_p2).w,(v_bg3scrposy_vdp).w
 		subi.w	#224,(v_bg3scrposy_vdp).w
 		andi.l	#$FFFEFFFE,(v_bg3scrposy_vdp).w
-		move.w	(Camera_X_pos_P2).w,d0
+		move.w	(v_screenposx_p2).w,d0
 		cmpi.b	#GameModeID_TitleScreen,(v_gamemode).w
 		bne.s	loc_5DCC
 		moveq	#0,d0
@@ -380,7 +380,7 @@ loc_5E2A:
 		dbf	d1,loc_5E2A
 
 		move.w	(Camera_BG2_X_pos_P2).w,d0
-		move.w	(Camera_X_pos_P2).w,d2
+		move.w	(v_screenposx_p2).w,d2
 		sub.w	d0,d2
 		ext.l	d2
 		asl.l	#8,d2
@@ -417,15 +417,15 @@ Deform_LZ:
 		ext.l	d5
 		asl.l	#7,d5
 		bsr.w	ScrollBlock1
-		move.w	(Camera_BG_Y_pos).w,(v_bgscrposy_vdp).w
+		move.w	(v_bgscreenposy).w,(v_bgscrposy_vdp).w
 		lea	(Deform_LZ_Data1).l,a3
 		lea	(Obj0A_WobbleData).l,a2
 		move.b	(v_lz_deform).w,d2
 		move.b	d2,d3
 		addi.w	#$80,(v_lz_deform).w
-		add.w	(Camera_BG_Y_pos).w,d2
+		add.w	(v_bgscreenposy).w,d2
 		andi.w	#$FF,d2
-		add.w	(Camera_Y_pos).w,d3
+		add.w	(v_screenposy).w,d3
 		andi.w	#$FF,d3
 		lea	(v_hscrolltablebuffer).w,a1
 		move.w	#224-1,d1
@@ -433,10 +433,10 @@ Deform_LZ:
 		neg.w	d0
 		move.w	d0,d6
 		swap	d0
-		move.w	(Camera_BG_X_pos).w,d0
+		move.w	(v_bgscreenposx).w,d0
 		neg.w	d0
 		move.w	(v_waterpos1).w,d4
-		move.w	(Camera_Y_pos).w,d5
+		move.w	(v_screenposy).w,d5
 
 loc_5EC6:
 		cmp.w	d4,d5
@@ -493,13 +493,13 @@ Deform_CPZ:
 		ext.l	d5
 		asl.l	#6,d5
 		bsr.w	ScrollBlock1
-		move.w	(Camera_BG_Y_pos).w,(v_bgscrposy_vdp).w
+		move.w	(v_bgscreenposy).w,(v_bgscrposy_vdp).w
 		lea	(v_hscrolltablebuffer).w,a1
 		move.w	#224-1,d1
 		move.w	(Camera_RAM).w,d0
 		neg.w	d0
 		swap	d0
-		move.w	(Camera_BG_X_pos).w,d0
+		move.w	(v_bgscreenposx).w,d0
 		neg.w	d0
 
 loc_6026:
@@ -522,14 +522,14 @@ Deform_Unk:						; unknown BG deform
 		asl.l	#7,d4
 		moveq	#4,d6
 		bsr.w	ScrollBlock5
-		move.w	(Camera_BG_Y_pos).w,(v_bgscrposy_vdp).w
+		move.w	(v_bgscreenposy).w,(v_bgscrposy_vdp).w
 		move.b	(v_bg1_scroll_flags).w,d0
 		or.b	(v_bg2_scroll_flags).w,d0
 		move.b	d0,(v_bg3_scroll_flags).w
 		clr.b	(v_bg1_scroll_flags).w
 		clr.b	(v_bg2_scroll_flags).w
 		lea	(v_bgscroll_buffer).w,a1
-		move.w	(Camera_BG_X_pos).w,d0
+		move.w	(v_bgscreenposx).w,d0
 		neg.w	d0
 		move.w	#19-1,d1
 
@@ -546,7 +546,7 @@ loc_6088:
 		dbf	d1,loc_6088
 
 		lea	(v_bgscroll_buffer).w,a2
-		move.w	(Camera_BG_Y_pos).w,d0
+		move.w	(v_bgscreenposy).w,d0
 		andi.w	#$3F0,d0
 		lsr.w	#3,d0
 		lea	(a2,d0.w),a2
@@ -556,7 +556,7 @@ loc_6088:
 
 
 Deform_TitleScreen:
-		move.w	(Camera_BG_Y_pos).w,(v_bgscrposy_vdp).w
+		move.w	(v_bgscreenposy).w,(v_bgscrposy_vdp).w
 		move.w	(Camera_RAM).w,d0
 		cmpi.w	#$1C00,d0
 		bhs.s	loc_60B6
@@ -574,7 +574,7 @@ loc_60B6:
 Deform_EHZ:
 		tst.w	(Two_player_mode).w
 		bne.w	Deform_EHZ_2P
-		move.w	(Camera_BG_Y_pos).w,(v_bgscrposy_vdp).w
+		move.w	(v_bgscreenposy).w,(v_bgscrposy_vdp).w
 		lea	(v_hscrolltablebuffer).w,a1
 		move.w	(Camera_RAM).w,d0
 		neg.w	d0
@@ -726,7 +726,7 @@ Deform_EHZ_2P:
 		subq.w	#1,(v_bgscroll_buffer).w
 
 loc_621C:
-		move.w	(Camera_BG_Y_pos).w,(v_bgscrposy_vdp).w
+		move.w	(v_bgscreenposy).w,(v_bgscrposy_vdp).w
 		andi.l	#$FFFEFFFE,(v_scrposy_vdp).w
 		lea	(v_hscrolltablebuffer).w,a1
 		move.w	(Camera_RAM).w,d0
@@ -736,7 +736,7 @@ loc_621C:
 		moveq	#0,d0
 		move.w	d0,(v_bg3scrposx_vdp).w
 		subi.w	#224,(v_bg3scrposx_vdp).w
-		move.w	(Camera_Y_pos_P2).w,(v_bg3scrposy_vdp).w
+		move.w	(v_screenposy_p2).w,(v_bg3scrposy_vdp).w
 		subi.w	#224,(v_bg3scrposy_vdp).w
 		andi.l	#$FFFEFFFE,(v_bg3scrposy_vdp).w
 	if FixBugs
@@ -745,7 +745,7 @@ loc_621C:
 	else
 		lea	(v_hscrolltablebuffer+216*2).w,a1
 	endif
-		move.w	(Camera_X_pos_P2).w,d0
+		move.w	(v_screenposx_p2).w,d0
 	if FixBugs
 		move.w	#11-1,d1	; do second player deformation
 		; second player deformation height = 11+29+11+5+8+8+40 = 112
@@ -893,7 +893,7 @@ Deform_HPZ:
 		bsr.w	ScrollBlock2
 
 		; Update the background's vertical scrolling.
-		move.w	(Camera_BG_Y_pos).w,(v_bgscrposy_vdp).w
+		move.w	(v_bgscreenposy).w,(v_bgscrposy_vdp).w
 
 		; Rather than scroll each individual line of the background, this
 		; zone scrolls entire blocks of lines (16 lines) at once. The scroll
@@ -955,7 +955,7 @@ loc_637E:
 		move.w	d3,-(a2)
 
 		; Do 26 line blocks.
-		move.w	(Camera_BG_X_pos).w,d0
+		move.w	(v_bgscreenposx).w,d0
 		neg.w	d0
 		move.w	#26-1,d1
 
@@ -976,7 +976,7 @@ loc_63F2:
 		dbf	d1,loc_63F2
 
 		lea	(v_bgscroll_buffer).w,a2
-		move.w	(Camera_BG_Y_pos).w,d0
+		move.w	(v_bgscreenposy).w,d0
 		move.w	d0,d2
 		andi.w	#$3F0,d0
 		lsr.w	#3,d0
@@ -985,7 +985,7 @@ loc_63F2:
 ; ---------------------------------------------------------------------------
 
 Deform_HTZ:
-		move.w	(Camera_BG_Y_pos).w,(v_bgscrposy_vdp).w
+		move.w	(v_bgscreenposy).w,(v_bgscrposy_vdp).w
 		lea	(v_hscrolltablebuffer).w,a1
 		move.w	(Camera_RAM).w,d0
 		neg.w	d0
@@ -1381,10 +1381,10 @@ locret_66B4:
 
 
 ScrollBlock1:
-		move.l	(Camera_BG_X_pos).w,d2
+		move.l	(v_bgscreenposx).w,d2
 		move.l	d2,d0
 		add.l	d4,d0
-		move.l	d0,(Camera_BG_X_pos).w
+		move.l	d0,(v_bgscreenposx).w
 		move.l	d0,d1
 		swap	d1
 		andi.w	#16,d1
@@ -1402,10 +1402,10 @@ loc_66E4:
 		bset	#3,(v_bg1_scroll_flags).w
 
 loc_66EA:
-		move.l	(Camera_BG_Y_pos).w,d3
+		move.l	(v_bgscreenposy).w,d3
 		move.l	d3,d0
 		add.l	d5,d0
-		move.l	d0,(Camera_BG_Y_pos).w
+		move.l	d0,(v_bgscreenposy).w
 		move.l	d0,d1
 		swap	d1
 		andi.w	#16,d1
@@ -1431,10 +1431,10 @@ locret_671E:
 
 
 ScrollBlock2:
-		move.l	(Camera_BG_Y_pos).w,d3
+		move.l	(v_bgscreenposy).w,d3
 		move.l	d3,d0
 		add.l	d5,d0
-		move.l	d0,(Camera_BG_Y_pos).w
+		move.l	d0,(v_bgscreenposy).w
 		move.l	d0,d1
 		swap	d1
 		andi.w	#16,d1
@@ -1459,8 +1459,8 @@ locret_6752:
 ; ---------------------------------------------------------------------------
 
 ScrollBlock3:
-		move.w	(Camera_BG_Y_pos).w,d3
-		move.w	d0,(Camera_BG_Y_pos).w
+		move.w	(v_bgscreenposy).w,d3
+		move.w	d0,(v_bgscreenposy).w
 		move.w	d0,d1
 		andi.w	#16,d1
 		move.b	(Verti_block_crossed_flag_BG).w,d2
@@ -1483,10 +1483,10 @@ locret_6782:
 
 
 ScrollBlock4:
-		move.l	(Camera_BG_X_pos).w,d2
+		move.l	(v_bgscreenposx).w,d2
 		move.l	d2,d0
 		add.l	d4,d0
-		move.l	d0,(Camera_BG_X_pos).w
+		move.l	d0,(v_bgscreenposx).w
 		move.l	d0,d1
 		swap	d1
 		andi.w	#16,d1

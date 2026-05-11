@@ -131,30 +131,26 @@ Ring_Positions_End:
 Camera_RAM:
 
 Camera_Positions:
-Camera_X_pos:		ds.l	1
-Camera_Y_pos:		ds.l	1
-Camera_BG_X_pos:	ds.l	1	; only used sometimes as the layer deformation makes it sort of redundant
-Camera_BG_Y_pos:	ds.l	1
+v_screenposx:		ds.l	1
+v_screenposy:		ds.l	1
+v_bgscreenposx:	ds.l	1	; only used sometimes as the layer deformation makes it sort of redundant
+v_bgscreenposy:	ds.l	1
 Camera_BG2_X_pos:	ds.l	1	; used in CPZ
 Camera_BG2_Y_pos:	ds.l	1	; used in CPZ
 Camera_BG3_X_pos:	ds.l	1	; unused (only initialised at beginning of level)?
 Camera_BG3_Y_pos:	ds.l	1	; unused (only initialised at beginning of level)?
 Camera_Positions_end:
 
-v_screenposx:	 	equ		Camera_X_pos
-v_screenposy:	 	equ		Camera_Y_pos
-v_bgscreenposx:	 	equ		Camera_BG_X_pos
-v_bgscreenposy:  	equ		Camera_BG_Y_pos
 v_bg2screenposx: 	equ		Camera_BG2_X_pos
 v_bg2screenposy: 	equ		Camera_BG2_Y_pos
 v_bg3screenposx: 	equ		Camera_BG3_X_pos
 v_bg3screenposy: 	equ		Camera_BG3_Y_pos
 
 Camera_Positions_P2:
-Camera_X_pos_P2:	ds.l	1
-Camera_Y_pos_P2:	ds.l	1
-Camera_BG_X_pos_P2:	ds.l	1	; only used sometimes as the layer deformation makes it sort of redundant
-Camera_BG_Y_pos_P2:	ds.l	1
+v_screenposx_p2:	ds.l	1
+v_screenposy_p2:	ds.l	1
+v_bgscreenposx_p2:	ds.l	1	; only used sometimes as the layer deformation makes it sort of redundant
+v_bgscreenposy_p2:	ds.l	1
 Camera_BG2_X_pos_P2:ds.l	1	; unused (only initialised at beginning of level)?
 Camera_BG2_Y_pos_P2:ds.l	1	; unused (only initialised at beginning of level)?
 Camera_BG3_X_pos_P2:ds.l	1	; unused (only initialised at beginning of level)?
@@ -462,7 +458,7 @@ f_endactbonus:		ds.b	1		; time/ring bonus update flag at the end of an act
 			ds.b	1		; unused
 v_lz_deform:		ds.w	1		; LZ deformation offset, in units of $80
 
-Camera_X_pos_coarse:		ds.w	1	; (Camera_X_pos - 128) / 256
+Camera_X_pos_coarse:		ds.w	1	; (v_screenposx - 128) / 256
 Camera_X_pos_coarse_End:
 
 Camera_X_pos_coarse_P2:		ds.w	1

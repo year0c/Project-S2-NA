@@ -109,9 +109,9 @@ Lamppost_StoreInfo:
 		move.b	(Dynamic_Resize_Routine).w,(v_lamp_dle).w
 		move.w	(Camera_Max_Y_pos).w,(v_lamp_limitbtm).w
 		move.w	(Camera_RAM).w,(v_lamp_scrx).w
-		move.w	(Camera_Y_pos).w,(v_lamp_scry).w
-		move.w	(Camera_BG_X_pos).w,(v_lamp_bgscrx).w
-		move.w	(Camera_BG_Y_pos).w,(v_lamp_bgscry).w
+		move.w	(v_screenposy).w,(v_lamp_scry).w
+		move.w	(v_bgscreenposx).w,(v_lamp_bgscrx).w
+		move.w	(v_bgscreenposy).w,(v_lamp_bgscry).w
 		move.w	(Camera_BG2_X_pos).w,(v_lamp_bg2scrx).w
 		move.w	(Camera_BG2_Y_pos).w,(v_lamp_bg2scry).w
 		move.w	(Camera_BG3_X_pos).w,(v_lamp_bg3scrx).w
@@ -142,9 +142,9 @@ Lamppost_LoadInfo:
 		move.w	(v_lamp_limitbtm).w,(Camera_Max_Y_pos).w
 		move.w	(v_lamp_limitbtm).w,(Camera_Max_Y_pos_target).w
 		move.w	(v_lamp_scrx).w,(Camera_RAM).w
-		move.w	(v_lamp_scry).w,(Camera_Y_pos).w
-		move.w	(v_lamp_bgscrx).w,(Camera_BG_X_pos).w
-		move.w	(v_lamp_bgscry).w,(Camera_BG_Y_pos).w
+		move.w	(v_lamp_scry).w,(v_screenposy).w
+		move.w	(v_lamp_bgscrx).w,(v_bgscreenposx).w
+		move.w	(v_lamp_bgscry).w,(v_bgscreenposy).w
 		move.w	(v_lamp_bg2scrx).w,(Camera_BG2_X_pos).w
 		move.w	(v_lamp_bg2scry).w,(Camera_BG2_Y_pos).w
 		move.w	(v_lamp_bg3scrx).w,(Camera_BG3_X_pos).w

@@ -128,11 +128,11 @@ Obj0A_ShowNumber:
 		clr.w	obVelY(a0)
 		move.b	#$80,obRender(a0)
 		move.w	obX(a0),d0
-		sub.w	(Camera_X_pos).w,d0
+		sub.w	(v_screenposx).w,d0
 		addi.w	#$80,d0
 		move.w	d0,obX(a0)
 		move.w	obY(a0),d0
-		sub.w	(Camera_Y_pos).w,d0
+		sub.w	(v_screenposy).w,d0
 		addi.w	#$80,d0
 		move.w	d0,obScreenY(a0)
 		move.b	#$C,obRoutine(a0)

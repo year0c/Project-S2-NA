@@ -20,8 +20,8 @@ Debug_Init:
 		move.w	#0,(Camera_Min_Y_pos).w
 		move.w	#$720,(Camera_Max_Y_pos_target).w
 		andi.w	#$7FF,(v_player+obY).w
-		andi.w	#$7FF,(Camera_Y_pos).w
-		andi.w	#$3FF,(Camera_BG_Y_pos).w
+		andi.w	#$7FF,(v_screenposy).w
+		andi.w	#$3FF,(v_bgscreenposy).w
 		move.b	#0,obFrame(a0)
 		move.b	#AniIDSonAni_Walk,obAnim(a0)
 

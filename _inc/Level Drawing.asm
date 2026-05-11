@@ -4,7 +4,7 @@
 		lea	(vdp_control_port).l,a5
 		lea	(vdp_data_port).l,a6
 		lea	(v_bg1_scroll_flags).w,a2
-		lea	(Camera_BG_X_pos).w,a3
+		lea	(v_bgscreenposx).w,a3
 		lea	(v_lvllayout_bg).w,a4
 		move.w	#$6000,d2
 		bsr.w	DrawBGScrollBlock1
@@ -301,7 +301,7 @@ Draw_SBz:
 
 loc_6B04:
 		lea	byte_6AD0+1(pc),a0
-		move.w	(Camera_BG_Y_pos).w,d0
+		move.w	(v_bgscreenposy).w,d0
 		add.w	d4,d0
 		andi.w	#$1F0,d0
 		lsr.w	#4,d0
@@ -343,7 +343,7 @@ loc_6B52:
 
 loc_6B66:
 		lea	byte_6AD0(pc),a0
-		move.w	(Camera_BG_Y_pos).w,d0
+		move.w	(v_bgscreenposy).w,d0
 		andi.w	#$1F0,d0
 		lsr.w	#4,d0
 		lea	(a0,d0.w),a0
@@ -401,7 +401,7 @@ Draw_Mz:
 
 loc_6C1E:
 		lea	byte_6BCA+1(pc),a0
-		move.w	(Camera_BG_Y_pos).w,d0
+		move.w	(v_bgscreenposy).w,d0
 		add.w	d4,d0
 		andi.w	#$3F0,d0
 		lsr.w	#4,d0
@@ -431,7 +431,7 @@ loc_6C4E:
 
 loc_6C62:
 		lea	byte_6BCA(pc),a0
-		move.w	(Camera_BG_Y_pos).w,d0
+		move.w	(v_bgscreenposy).w,d0
 	if FixBugs
 		andi.w	#$3F0,d0
 	else
@@ -1053,7 +1053,7 @@ LoadTilesFromStart:
 		lea	(vdp_data_port).l,a6
 		tst.w	(Two_player_mode).w
 		beq.s	loc_711E
-		lea	(Camera_X_pos_P2).w,a3
+		lea	(v_screenposx_p2).w,a3
 		lea	(v_lvllayout).w,a4
 		move.w	#$6000,d2
 		bsr.s	DrawChunks_2P
@@ -1063,7 +1063,7 @@ loc_711E:
 		lea	(v_lvllayout).w,a4
 		move.w	#$4000,d2
 		bsr.s	DrawChunks
-		lea	(Camera_BG_X_pos).w,a3
+		lea	(v_bgscreenposx).w,a3
 		lea	(v_lvllayout_bg).w,a4
 		move.w	#$6000,d2
 		tst.b	(v_zone).w
@@ -1129,7 +1129,7 @@ Draw_GHz_Bg:
 loc_71A4:
 		movem.l	d4-d6,-(sp)
 		lea	(byte_71CA).l,a0
-		move.w	(Camera_BG_Y_pos).w,d0
+		move.w	(v_bgscreenposy).w,d0
 		add.w	d4,d0
 		andi.w	#$F0,d0
 		bsr.w	sub_7232
@@ -1147,7 +1147,7 @@ byte_71CA:	dc.b   0,  0,  0,  0,  6,  6,  6,  4,  4,  4,  0,  0,  0,  0,  0,  0
 loc_71DE:
 		movem.l	d4-d6,-(sp)
 		lea	byte_6BCA+1(pc),a0
-		move.w	(Camera_BG_Y_pos).w,d0
+		move.w	(v_bgscreenposy).w,d0
 		add.w	d4,d0
 		andi.w	#$3F0,d0
 		bsr.w	sub_7232
@@ -1163,7 +1163,7 @@ loc_71DE:
 loc_7206:
 		movem.l	d4-d6,-(sp)
 		lea	byte_6AD0+1(pc),a0
-		move.w	(Camera_BG_Y_pos).w,d0
+		move.w	(v_bgscreenposy).w,d0
 		add.w	d4,d0
 		andi.w	#$1F0,d0
 		bsr.w	sub_7232
@@ -1172,8 +1172,8 @@ loc_7206:
 		dbf	d6,loc_7206
 		rts
 ; ---------------------------------------------------------------------------
-word_722A:	dc.w Camera_BG_X_pos
-		dc.w Camera_BG_X_pos
+word_722A:	dc.w v_bgscreenposx
+		dc.w v_bgscreenposx
 		dc.w Camera_BG2_X_pos
 		dc.w Camera_BG3_X_pos
 

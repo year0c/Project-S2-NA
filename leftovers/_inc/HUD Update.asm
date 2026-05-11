@@ -211,12 +211,12 @@ HUD_TilesBase_PB_End:
 
 HUDDebug_XY_PB:
 		locVRAM	(ArtTile_HUD+$18)*tile_size		; set VRAM address
-		move.w	(Camera_X_pos).w,d1
+		move.w	(v_screenposx).w,d1
 		move.w	(v_objstate).w,d1
 		swap	d1
 		move.w	(v_player+obX).w,d1
 		bsr.s	HUDDebug_XY2_PB
-		move.w	(Camera_Y_pos).w,d1
+		move.w	(v_screenposy).w,d1
 		move.w	(Obj_respawn_index_P2).w,d1
 		swap	d1
 		move.w	(v_player+obY).w,d1
