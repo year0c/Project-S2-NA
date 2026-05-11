@@ -258,6 +258,12 @@ jmpTosInternal macro UseNop
 	endif
     endm
 
+	; similar function as rsset from asm68k compiler
+dsset macro
+current_offset_rom := *
+	phase ALLARGS
+    endm
+
 	; Output list of JmpTos, pad start with a NOP instuction.
 jmpTos macro
 	jmpTosInternal TRUE,ALLARGS

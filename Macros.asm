@@ -3,7 +3,8 @@
 ; all RAM addresses are run through this function to allow them to work in
 ; both 16-bit and 32-bit addressing modes
 ; ---------------------------------------------------------------------------
-ramaddr function x,(-(x&$80000000)<<1)|x
+
+ramaddr function x,-(-x)&$FFFFFFFF
 
 ; ---------------------------------------------------------------------------
 ; makes a VDP command
