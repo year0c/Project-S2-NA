@@ -7,9 +7,6 @@ MoveSonicInDemo:
 		rts
 ; ---------------------------------------------------------------------------
 
-MoveSonic_DemoRecord:					; unused subroutine for	recording demos
-		lea	(RAM_debug_demo_record).l,a1
-
 loc_4474:
 		move.w	(Demo_button_index).w,d0
 		adda.w	d0,a1
@@ -31,7 +28,6 @@ loc_4490:
 loc_44A4:
 		cmpi.b	#id_EHZ,(v_zone).w		; are we on Emerald Hill?
 		bne.s	locret_44E2			; if not, branch
-		lea	(RAM_debug_demo_record_2P).l,a1
 		move.w	(Demo_button_index_2P).w,d0
 		adda.w	d0,a1
 		move.b	(v_P2jpadhold).w,d0
@@ -135,15 +131,6 @@ Demo_Index:
 		dc.l Demo_HTZ
 		dc.l Demo_S1SS	; leftover demo	from Sonic 1 Special Stage
 		dc.l Demo_S1SS	; leftover demo	from Sonic 1 Special Stage
-		dc.l RAM_debug_demo_record	; These point to the unused demo recording's offset
-		dc.l RAM_debug_demo_record
-		dc.l RAM_debug_demo_record
-		dc.l RAM_debug_demo_record
-		dc.l RAM_debug_demo_record
-		dc.l RAM_debug_demo_record
-		dc.l RAM_debug_demo_record
-		dc.l RAM_debug_demo_record
-		dc.l RAM_debug_demo_record
 
 Demo_S1EndIndex:
 	if 0

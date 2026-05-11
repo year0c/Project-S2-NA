@@ -167,7 +167,7 @@ EntryPoint:
 		tst.w	(HW_Expansion_Control-1).l	; test port C control
 PortA_OK:	bne.s	SkipSetup			; skip the VDP and Z80 setup code if this is a soft-reset
 
-		lea	SetupValues(pc),a5	; load setup values array address
+		lea		SetupValues(pc),a5	; load setup values array address
 		movem.w	(a5)+,d5-d7
 		movem.l	(a5)+,a0-a4
 		move.b	console_version-z80_bus_request(a1),d0	; get hardware version
@@ -186,7 +186,7 @@ VDPInitLoop:
 		move.b	(a5)+,d5	; add $8000 to value
 		move.w	d5,(a4)		; move value to VDP register
 		add.w	d7,d5		; next register
-		dbf	d1,VDPInitLoop
+		dbf	d1,	VDPInitLoop
 		
 		move.l	(a5)+,(a4)	; set VRAM write mode
 		move.w	d0,(a3)		; clear the VRAM
@@ -200,7 +200,7 @@ WaitForZ80:
 		moveq	#Z80StartupCodeEnd-Z80StartupCodeBegin-1,d2
 Z80InitLoop:
 		move.b	(a5)+,(a0)+
-		dbf	d2,Z80InitLoop
+		dbf	d2,	Z80InitLoop
 		
 		move.w	d0,(a2)
 		move.w	d0,(a1)		; start the Z80
@@ -208,25 +208,25 @@ Z80InitLoop:
 
 ClrRAMLoop:
 		move.l	d0,-(a6)	; clear 4 bytes of RAM
-		dbf	d6,ClrRAMLoop	; repeat until the entire RAM is clear
+		dbf	d6,	ClrRAMLoop	; repeat until the entire RAM is clear
 		move.l	(a5)+,(a4)	; set VDP display mode and increment mode
 		move.l	(a5)+,(a4)	; set VDP to CRAM write
 
 		moveq	#bytesToLcnt($80),d3	; set repeat times
 ClrCRAMLoop:
 		move.l	d0,(a3)	; clear 2 palettes
-		dbf	d3,ClrCRAMLoop	; repeat until the entire CRAM is clear
+		dbf	d3,	ClrCRAMLoop	; repeat until the entire CRAM is clear
 		move.l	(a5)+,(a4)	; set VDP to VSRAM write
 
 		moveq	#bytesToLcnt($50),d4	; set repeat times
 ClrVSRAMLoop:
 		move.l	d0,(a3)	; clear 4 bytes of VSRAM.
-		dbf	d4,ClrVSRAMLoop	; repeat until the entire VSRAM is clear
+		dbf	d4,	ClrVSRAMLoop	; repeat until the entire VSRAM is clear
 		moveq	#PSGInitValues_End-PSGInitValues-1,d5	; set repeat times
 
 PSGInitLoop:
 		move.b	(a5)+,psg_input-vdp_data_port(a3)	; reset the PSG
-		dbf	d5,PSGInitLoop	; repeat for other channels
+		dbf	d5,	PSGInitLoop	; repeat for other channels
 		move.w	d0,(a2)
 		movem.l	(a6),d0-a6	; clear all registers
 		disable_ints
@@ -315,7 +315,7 @@ Z80StartupCodeEnd:
 		dc.l	vdpComm($0000,VSRAM,WRITE)	; value for VSRAM write mode
 
 PSGInitValues:
-		dc.b $9F, $BF, $DF, $FF	; values for PSG channel volumes
+		dc.b 	$9F, $BF, $DF, $FF	; values for PSG channel volumes
 PSGInitValues_End:
 ; ===========================================================================
 
@@ -323,7 +323,6 @@ GameProgram:
 		tst.w	(vdp_control_port).l
 
 CheckSumCheck:
-	if SkipChecksumCheck=0
 		move.w	(vdp_control_port).l,d1
 		btst	#1,d1
 		bne.s	CheckSumCheck	; wait until DMA is completed
@@ -334,6 +333,7 @@ CheckSumCheck:
 		beq.w	GameInit
 
 CheckSumTest:
+	if SkipChecksumCheck=0
 		movea.l	#EndOfHeader,a0	; start checking bytes after the header ($200)
 		movea.l	#RomEndLoc,a1	; stop at end of ROM
 		move.l	(a1),d0
@@ -349,7 +349,7 @@ CheckSumTest:
 	endif
 
 CheckSumOk:
-		lea	(v_ram_start&$FFFFFF).l,a6
+		lea		(v_ram_start&$FFFFFF).l,a6
 		moveq	#0,d7
 		move.w	#bytesToLcnt(v_crossresetram-v_ram_start_def),d6
 .clearRAM:
@@ -363,7 +363,7 @@ CheckSumOk:
 
 GameInit:
 		; Clear some RAM on every boot and reset.
-		lea	(v_ram_start&$FFFFFF).l,a6
+		lea		(v_ram_start&$FFFFFF).l,a6
 		moveq	#0,d7
 		move.w	#bytesToLcnt(v_crossresetram-v_ram_start_def),d6
 .clearRAM:
@@ -394,7 +394,8 @@ GameMode_SpecialStage:	bra.w	SpecialStage		; Special Stage play mode ($10)
 CheckSumError:
 		jsr	(InitDMAQueue).l
 		bsr.w	VDPSetupGame
-		move.l	#$C0000000,(vdp_control_port).l ; set VDP to CRAM write
+		move.l	(sp)+,d1
+		move.l	#vdpComm($0000,CRAM,WRITE),(vdp_control_port).l ; set VDP to CRAM write
 		moveq	#bytesToWcnt(palette_size),d7
 
 .fillred:
@@ -2706,118 +2707,6 @@ LevelSelect_Text:
 		even
 ; ---------------------------------------------------------------------------
 
-; This appears to be potentially related to 16x16 data despite it using the
-; address for chunk RAM.
-UnknownSub_1:
-		lea	(v_ram_start).l,a1
-		; This contains a size of block data that is 0x5D8 in size.
-		move.w	#bytesToWcnt($5D8),d2
-
-loc_3A3A:
-		move.w	(a1),d0
-		move.w	d0,d1
-		andi.w	#nontile_mask,d1
-		andi.w	#tile_mask,d0
-		lsr.w	#1,d0
-		or.w	d0,d1
-		move.w	d1,(a1)+
-		dbf	d2,loc_3A3A
-		rts
-; ---------------------------------------------------------------------------
-
-UnknownSub_2:
-		lea	(RAM_debug_start).l,a1
-		lea	(RAM_debug_start+$80).l,a2
-		lea	(v_ram_start).l,a3
-		move.w	#bytesToWcnt($80),d1
-
-loc_3A68:
-		bsr.w	UnknownSub_4
-		bsr.w	UnknownSub_4
-		dbf	d1,loc_3A68
-		lea	(RAM_debug_start).l,a1
-		lea	(v_ram_start&$FFFFFF).l,a2
-		move.w	#bytesToWcnt($80),d1
-
-loc_3A84:
-		move.w	#0,(a2)+
-		dbf	d1,loc_3A84
-		move.w	#bytesToWcnt($7F80),d1
-
-loc_3A90:
-		move.w	(a1)+,(a2)+
-		dbf	d1,loc_3A90
-		rts
-; ---------------------------------------------------------------------------
-
-UnknownSub_3:
-		lea	(RAM_debug_start).l,a1
-		lea	(v_ram_start).l,a3
-		moveq	#bytesToLcnt($80),d0
-
-loc_3AA6:
-		move.l	(a1)+,(a3)+
-		dbf	d0,loc_3AA6
-		moveq	#0,d7
-		lea	(RAM_debug_start).l,a1
-		move.w	#$100-1,d5
-
-loc_3AB8:
-		lea	(v_ram_start).l,a3
-		move.w	d7,d6
-
-loc_3AC0:
-		movem.l	a1-a3,-(sp)
-		move.w	#bytesToWcnt($80),d0
-
-loc_3AC8:
-		cmpm.w	(a1)+,(a3)+
-		bne.s	loc_3ADE
-		dbf	d0,loc_3AC8
-		movem.l	(sp)+,a1-a3
-		adda.w	#$80,a1
-		dbf	d5,loc_3AB8
-		bra.s	loc_3AF8
-; ---------------------------------------------------------------------------
-
-loc_3ADE:
-		movem.l	(sp)+,a1-a3
-		adda.w	#$80,a3
-		dbf	d6,loc_3AC0
-		moveq	#bytesToLcnt($80),d0
-
-loc_3AEC:
-		move.l	(a1)+,(a3)+
-		dbf	d0,loc_3AEC
-		addq.l	#1,d7
-		dbf	d5,loc_3AB8
-
-loc_3AF8:
-		bra.s	loc_3AF8
-
-; =============== S U B	R O U T	I N E =======================================
-
-
-UnknownSub_4:
-		moveq	#bytesToXcnt($280,$50),d0
-
-loc_3AFC:
-		move.l	(a3)+,(a1)+
-		move.l	(a3)+,(a1)+
-		move.l	(a3)+,(a1)+
-		move.l	(a3)+,(a1)+
-		move.l	(a3)+,(a2)+
-		move.l	(a3)+,(a2)+
-		move.l	(a3)+,(a2)+
-		move.l	(a3)+,(a2)+
-		dbf	d0,loc_3AFC
-		adda.w	#$80,a1
-		adda.w	#$80,a2
-		rts
-; End of function UnknownSub_4
-
-		jmpTos	; Empty
-
 MusicList:
 		dc.b bgm_GHZ
 		dc.b bgm_LZ
@@ -4451,98 +4340,6 @@ loc_7456:
 		dbf	d2,loc_7426			; repeat for number of rows
 		rts
 ; End of function LevelLayoutLoad_GHZ
-
-; ---------------------------------------------------------------------------
-
-LevelLayout_Convert:					; leftover level layout	converting function (from raw to the way it's stored in the game)
-		lea	(RAM_debug_start).l,a1
-		lea	(RAM_debug_start+$80).l,a2
-		lea	(v_ram_start).l,a3
-		move.w	#$40-1,d1
-
-loc_747A:
-		bsr.w	sub_750C
-		bsr.w	sub_750C
-		dbf	d1,loc_747A
-		lea	(RAM_debug_start).l,a1
-		lea	(v_ram_start&$FFFFFF).l,a2
-		move.w	#bytesToWcnt($80),d1
-
-loc_7496:
-		move.w	#0,(a2)+
-		dbf	d1,loc_7496
-		move.w	#bytesToWcnt($7F80),d1
-
-loc_74A2:
-		move.w	(a1)+,(a2)+
-		dbf	d1,loc_74A2
-		rts
-; ---------------------------------------------------------------------------
-		lea	(RAM_debug_start).l,a1
-		lea	(v_ram_start).l,a3
-		moveq	#bytesToLcnt($80),d0
-
-loc_74B8:
-		move.l	(a1)+,(a3)+
-		dbf	d0,loc_74B8
-		moveq	#0,d7
-		lea	(RAM_debug_start).l,a1
-		move.w	#bytesToWcnt($200),d5
-
-loc_74CA:
-		lea	(v_ram_start).l,a3
-		move.w	d7,d6
-
-loc_74D2:
-		movem.l	a1-a3,-(sp)
-		move.w	#bytesToWcnt($80),d0
-
-loc_74DA:
-		cmpm.w	(a1)+,(a3)+
-		bne.s	loc_74F0
-		dbf	d0,loc_74DA
-		movem.l	(sp)+,a1-a3
-		adda.w	#$80,a1
-		dbf	d5,loc_74CA
-		bra.s	loc_750A
-; ---------------------------------------------------------------------------
-
-loc_74F0:
-		movem.l	(sp)+,a1-a3
-		adda.w	#$80,a3
-		dbf	d6,loc_74D2
-		moveq	#bytesToLcnt($80),d0
-
-loc_74FE:
-		move.l	(a1)+,(a3)+
-		dbf	d0,loc_74FE
-		addq.l	#1,d7
-		dbf	d5,loc_74CA
-
-loc_750A:
-		bra.s	loc_750A
-
-; =============== S U B	R O U T	I N E =======================================
-
-
-sub_750C:
-		moveq	#bytesToXcnt($100,32),d0
-
-loc_750E:
-		move.l	(a3)+,(a1)+
-		move.l	(a3)+,(a1)+
-		move.l	(a3)+,(a1)+
-		move.l	(a3)+,(a1)+
-		move.l	(a3)+,(a2)+
-		move.l	(a3)+,(a2)+
-		move.l	(a3)+,(a2)+
-		move.l	(a3)+,(a2)+
-		dbf	d0,loc_750E
-		adda.w	#$80,a1
-		adda.w	#$80,a2
-		rts
-; End of function sub_750C
-
 
 ; =============== S U B	R O U T	I N E =======================================
 

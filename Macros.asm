@@ -1,8 +1,9 @@
 ; ---------------------------------------------------------------------------
-; makes a VDP address difference
+; sign-extends a 32-bit integer to 64-bit
+; all RAM addresses are run through this function to allow them to work in
+; both 16-bit and 32-bit addressing modes
 ; ---------------------------------------------------------------------------
-
-vdpCommDelta function addr,((addr&$3FFF)<<16)|((addr&$C000)>>14)
+ramaddr function x,(-(x&$80000000)<<1)|x
 
 ; ---------------------------------------------------------------------------
 ; makes a VDP command

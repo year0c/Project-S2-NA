@@ -1,20 +1,5 @@
 	include "s1.sounddriver.ram.asm"
 
-; Main RAM
-	phase	($FE0000)
-RAM_debug_start:	ds.b	$8000
-
-RAM_debug_demo_record:	ds.w	$2000
-
-RAM_debug_demo_record_2P:	ds.w	$2000
-
-RAM_debug_end:
-	dephase
-
-; sign-extends a 32-bit integer to 64-bit
-; all RAM addresses are run through this function to allow them to work in both 16-bit and 32-bit addressing modes
-ramaddr function x,(-(x&$80000000)<<1)|x
-
 ; Variables (v) and Flags (f)
 
 	phase ramaddr ( $FFFF0000 )
