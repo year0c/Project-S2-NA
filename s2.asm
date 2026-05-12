@@ -2222,7 +2222,7 @@ loc_32C4:
 		bsr.w	NewPLC
 		move.w	#0,(v_title_dcount).w
 		move.w	#0,(v_title_ccount).w
-		move.w	#id_EHZ<<8,(v_zone).w
+		move.w	#id_GHZ<<8,(v_zone).w
 		move.w	#4,(Sonic_Pos_Record_Index).w
 		move.w	#0,(Sonic_Pos_Record_Buf).w
 		enable_display
@@ -13045,7 +13045,7 @@ Art_LivesNums:	binclude	"art/uncompressed/Lives Counter Numbers.bin"
 AngleMap_S1:	binclude	"collision/S1/Angle Map.bin"
 AngleMap_S1_End:
 		even
-AngleMap:	binclude	"collision/Curve and resistance mapping.bin"
+AngleMap:	binclude	"collision/S1/Angle Map.bin"
 AngleMap_End:
 		even
 CollArray1_S1:	binclude	"collision/S1/Collision Array (Normal).bin"
@@ -13054,15 +13054,15 @@ CollArray1_S1_End:
 CollArray2_S1:	binclude	"collision/S1/Collision Array (Rotated).bin"
 CollArray2_S1_End:
 		even
-CollArray1:	binclude	"collision/Collision array 1.bin"
+CollArray1:	binclude	"collision/S1/Collision Array (Normal).bin"
 CollArray1_End:
 		even
-CollArray2:	binclude	"collision/Collision array 2.bin"
+CollArray2:	binclude	"collision/S1/Collision Array (Rotated).bin"
 CollArray2_End:
 		even
-ColP_GHZ:	binclude	"collision/S1/GHZ1.bin"
+ColP_GHZ:	binclude	"collision/S1/GHZ1.unc"
 		even
-ColS_GHZ:	binclude	"collision/S1/GHZ2.bin"
+ColS_GHZ:	binclude	"collision/S1/GHZ2.unc"
 		even
 ColP_EHZ:	binclude	"collision/EHZ primary 16x16 collision index.bin"
 		even
