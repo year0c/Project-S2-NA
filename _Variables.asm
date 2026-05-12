@@ -514,7 +514,6 @@ v_debugspeedtimer:	ds.b	1		; debug mode - timer before movement starts
 v_debugspeed:		ds.b	1		; debug mode - movement speed
 v_vblank_count:		ds.l	1		; vertical interrupt counter (adds 1 every VBlank)
 
-
 v_zone:			ds.b	1			; (1 byte)
 v_act:			ds.b	1			; (1 byte)
 v_lives:		ds.b	1			; (1 byte)

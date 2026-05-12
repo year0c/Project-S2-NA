@@ -15,7 +15,7 @@ LevelDataLoad:
 		lea	(v_16x16).w,a1	; RAM address for 16x16 mappings
 		bsr.w	KosDec
 		tst.w	(Two_player_mode).w
-		beq.s	LevelDataLoad2
+		beq.s	+
 		; In 2P mode, adjust the block table to halve the pattern index on each block
 		lea	(v_16x16).w,a1
 
@@ -29,8 +29,7 @@ LevelDataLoad:
 		move.w	d0,(a1)+	; change the entry with the adjusted value
 		dbf	d2,-
 
-LevelDataLoad2:
-		movea.l	(a2)+,a0
++		movea.l	(a2)+,a0
 		lea	(v_128x128).l,a1	; RAM address for 128x128 mappings
 		bsr.w	KosDec
 		bsr.w	LevelLayoutLoad
@@ -59,7 +58,7 @@ LevelLayoutLoad:
 		move.w	(v_zone).w,d0
 		ror.b	#1,d0
 		lsr.w	#6,d0
-		lea	(v_collindex).l,a0
+		lea	(LevelHeaders).l,a0
 		move.w	(a0,d0.w),d0
 		lea	(a0,d0.l),a0
 		lea	(v_lvllayout).w,a1
