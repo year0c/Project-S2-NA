@@ -73,10 +73,10 @@ LevelLayoutLoad:
 		; The rows of the foreground and background layouts are interleaved
 		; in memory. This is done here:
 		lea	(v_lvllayout).w,a3		; Foreground.
-		moveq	#0,d1				; Index into 'Off_Level' to get level foreground layout.
+		moveq	#0,d1				; Index into 'v_collindex' to get level foreground layout.
 		bsr.w	.loadlayout
 		lea	(v_lvllayout_bg).w,a3	; Background.
-		moveq	#2,d1				; Index into 'Off_Level' to get level background layout.
+		moveq	#2,d1				; Index into 'v_collindex' to get level background layout.
 
 .loadlayout:
 		moveq	#0,d0
