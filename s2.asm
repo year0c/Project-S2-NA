@@ -2886,7 +2886,7 @@ Level_SkipTtlCard:
 		bsr.w	LevelDataLoad
 		jsr	(LoadAnimatedBlocks).l
 		bsr.w	LoadTilesFromStart
-		jsr	(ApplySonic1Collision).l
+		jsr	(ConvertCollisionArray).l
 		bsr.w	LoadCollisionIndexes
 		bsr.w	WaterEffects
 		move.b	#id_Obj01,(v_player).w	; load Sonic object
@@ -9902,51 +9902,114 @@ Map_obj08:	include	"mappings/sprite/obj08.asm"
 		include	"obj/sub FindWall.asm"
 
 ; ---------------------------------------------------------------------------
-; This dummied out subroutine takes Green Hill Zone/the Sonic 1 collision
-; format and converts it to the format used in-game - UNLIKE Sonic 1/2 Final,
-; where this instead converts the collision from a bitmap-like format to the
-; one used in game (though both of these would require a cartridge that could
-; write data to itself, not standard carts).
+; This subroutine takes 'raw' bitmap-like collision block data as input and
+; converts it into the proper collision arrays (ColArrayVertical and
+; ColArrayHorizontal).
+; Pointers to said raw data are dummied out.
+; Curiously, an example of the original 'raw' data that this was intended
+; to process can be found in the J2ME version of Sonic 1, in a file called
+; 'blkcol.bct'.
+; This subroutine exists in Sonic 1 as well, but was oddly changed in
+; the S2 Nick Arcade prototype to just handle loading GHZ's collision
+; instead (though it too is dummied out, hence collision being broken).
 ; ---------------------------------------------------------------------------
+
+RawColBlocks		= CollArray1
+ConvRowColBlocks	= CollArray1
 
 ; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
 
-; FloorLog_Unk: ConvertCollisionArray:
-ApplySonic1Collision:
-		rts
+; return_1EAF0: FloorLog_Unk:
+ConvertCollisionArray:
+	rts
 ; ---------------------------------------------------------------------------
-		lea	(CollArray1).l,a1
-		tst.b	(v_zone).w
-		beq.s	loc_13038
-		lea	(CollArray1).l,a1
+	; The raw format stores the collision data column by column for the normal collision array.
+	; This makes a copy of the data, but stored row by row, for the rotated collision array.
+	lea	(RawColBlocks).l,a1	; Source location of raw collision block data
+	lea	(ConvRowColBlocks).l,a2	; Destinatation location for row-converted collision block data
 
-loc_13038:
-		lea	(CollArray1).l,a2
-		move.w	#bytesToWcnt(CollArray1_End-CollArray1),d1
+	move.w	#$100-1,d3	; Number of blocks in collision data
+.blockLoop:
+	moveq	#16,d5		; Start on the 16th bit (the leftmost pixel)
 
-loc_13042:
-		move.w	(a1)+,(a2)+
-		dbf	d1,loc_13042
-		lea	(CollArray2).l,a2
-		move.w	#bytesToWcnt(CollArray2_End-CollArray2),d1
+	move.w	#16-1,d2	; Width of a block in pixels
+.columnLoop:
+	moveq	#0,d4
 
-loc_13052:
-		move.w	(a1)+,(a2)+
-		dbf	d1,loc_13052
-		lea	(AngleMap).l,a1
-		tst.b	(v_zone).w
-		beq.s	loc_1306A
-		lea	(AngleMap).l,a1
+	move.w	#16-1,d1	; Height of a block in pixels
+.rowLoop:
+	move.w	(a1)+,d0	; Get row of collision bits
+	lsr.l	d5,d0		; Push the selected bit of this row into the 'eXtend' flag
+	addx.w	d4,d4		; Shift d4 to the left, and insert the selected bit into bit 0
+	dbf	d1,.rowLoop	; Loop for each row of pixels in a block
 
-loc_1306A:
-		lea	(AngleMap).l,a2
-		move.w	#bytesToWcnt(AngleMap_End-AngleMap),d1
+	move.w	d4,(a2)+	; Store column of collision bits
+	suba.w	#2*16,a1	; Back to the start of the block
+	subq.w	#1,d5		; Get next bit in the row
+	dbf	d2,.columnLoop	; Loop for each column of pixels in a block
 
-loc_13074:
-		move.w	(a1)+,(a2)+
-		dbf	d1,loc_13074
-		rts
-; End of function ApplySonic1Collision
+	adda.w	#2*16,a1	; Next block
+	dbf	d3,.blockLoop	; Loop for each block in the raw collision block data
+
+	; This then converts the collision data into the final collision arrays
+	lea	(ConvRowColBlocks).l,a1
+	lea	(CollArray1).l,a2	; Convert the row-converted collision block data into final rotated collision array
+	bsr.s	.convertArrayToStandardFormat
+	lea	(RawColBlocks).l,a1
+	lea	(CollArray2).l,a2		; Convert the raw collision block data into final normal collision array
+
+; loc_1EB46: FloorLog_Unk2:
+.convertArrayToStandardFormat:
+	move.w	#$1000-1,d3	; Size of the collision array
+
+.processCollisionArrayLoop:
+	moveq	#0,d2
+	move.w	#$F,d1
+	move.w	(a1)+,d0	; Get current column of collision pixels
+	beq.s	.noCollision	; Branch if there's no collision in this column
+	bmi.s	.topPixelSolid	; Branch if top pixel of collision is solid
+
+	; Here we count, starting from the bottom, how many pixels tall
+	; the collision in this column is.
+.processColumnLoop1:
+	lsr.w	#1,d0
+	bcc.s	.pixelNotSolid1
+	addq.b	#1,d2
+.pixelNotSolid1:
+	dbf	d1,.processColumnLoop1
+
+	bra.s	.columnProcessed
+; ===========================================================================
+.topPixelSolid:
+	cmpi.w	#$FFFF,d0		; Is entire column solid?
+	beq.s	.entireColumnSolid	; Branch if so
+
+	; Here we count, starting from the top, how many pixels tall
+	; the collision in this column is (the resulting number is negative).
+.processColumnLoop2:
+	lsl.w	#1,d0
+	bcc.s	.pixelNotSolid2
+	subq.b	#1,d2
+.pixelNotSolid2:
+	dbf	d1,.processColumnLoop2
+
+	bra.s	.columnProcessed
+; ===========================================================================
+.entireColumnSolid:
+	move.w	#16,d0
+
+; loc_1EB78:
+.noCollision:
+	move.w	d0,d2
+
+; loc_1EB7A:
+.columnProcessed:
+	move.b	d2,(a2)+	; Store column collision height
+	dbf	d3,.processCollisionArrayLoop
+
+	rts
+
+; End of function ConvertCollisionArray
 
 
 ; =============== S U B	R O U T	I N E =======================================
@@ -12858,13 +12921,13 @@ Art_LivesNums:	binclude	"art/uncompressed/Lives Counter Numbers.bin"
 ; ---------------------------------------------------------------------------
 ; Collision data
 ; ---------------------------------------------------------------------------
-AngleMap:	binclude	"collision/S1/Angle Map.bin"
+AngleMap:	binclude	"collision/Curve and resistance mapping.bin"
 AngleMap_End:
 		even
-CollArray1:	binclude	"collision/S1/Collision Array (Normal).bin"
+CollArray1:	binclude	"collision/Collision array 1.bin"
 CollArray1_End:
 		even
-CollArray2:	binclude	"collision/S1/Collision Array (Rotated).bin"
+CollArray2:	binclude	"collision/Collision array 2.bin"
 CollArray2_End:
 		even
 ColP_GHZ:	binclude	"collision/S1/GHZ1.unc"
