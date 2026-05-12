@@ -4148,21 +4148,43 @@ LevelDataLoad2:
 
 ; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
 
-
 LevelLayoutLoad:
+		moveq	#0,d0
+		move.w	(v_zone).w,d0
+		ror.b	#1,d0
+		lsr.w	#6,d0
+		lea	(v_collindex).l,a0
+		move.w	(a0,d0.w),d0
+		lea	(a0,d0.l),a0
+		lea	(v_lvllayout).w,a1
+		jsr	KosDec
+; End of function LevelLayoutLoad
+
+; ===========================================================================
+
+;LevelLayoutLoad:
+		; This loads level layout data in Sonic 1's format. Curiously, this
+		; function has been changed since Sonic 1: in particular, it repeats
+		; the rows of the source data to fill the rows of the destination
+		; data, which provides some explanation for why so many of Sonic 2's
+		; backgrounds are repeated in their layout data. This repeating is
+		; needed to prevent Hidden Palace Zone's background from disappearing
+		; when the player moves to the left.
+
+		; Clear layout data.
 		lea	(v_lvllayout).w,a3
 		move.w	#bytesToLcnt(v_lvllayout_end-v_lvllayout),d1
 		moveq	#0,d0
+-		move.l	d0,(a3)+
+		dbf	d1,-
 
-loc_738E:
-		move.l	d0,(a3)+
-		dbf	d1,loc_738E			; fill $8000-$8FFF with 0
-
-		lea	(v_lvllayout).w,a3		; load foreground into RAM
-		moveq	#0,d1
+		; The rows of the foreground and background layouts are interleaved
+		; in memory. This is done here:
+		lea	(v_lvllayout).w,a3		; Foreground.
+		moveq	#0,d1				; Index into 'Off_Level' to get level foreground layout.
 		bsr.w	LevelLayoutLoad2
-		lea	(v_lvllayout_bg).w,a3		; load background into RAM
-		moveq	#2,d1
+		lea	(v_lvllayout_bg).w,a3	; Background.
+		moveq	#2,d1				; Index into 'Off_Level' to get level background layout.
 
 LevelLayoutLoad2:
 		tst.b	(v_zone).w		; test zone bit
