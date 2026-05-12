@@ -2883,7 +2883,7 @@ Level_SkipTtlCard:
 		bsr.w	LevelSizeLoad
 		bsr.w	DeformLayers
 		bset	#2,(v_fg_scroll_flags).w
-		bsr.w	MainLevelLoadBlock
+		bsr.w	LevelDataLoad
 		jsr	(LoadAnimatedBlocks).l
 		bsr.w	LoadTilesFromStart
 		jsr	(ApplySonic1Collision).l
@@ -4076,9 +4076,12 @@ BgScroll_S1Ending:
 		include	"_inc/Level Drawing.asm"
 
 ; =============== S U B	R O U T	I N E =======================================
+; ---------------------------------------------------------------------------
+; Subroutine to load basic level data
+; https://github.com/MDTravisYT/sonic-to-1
+; ---------------------------------------------------------------------------
 
-
-MainLevelLoadBlock:
+LevelDataLoad:
 		moveq	#0,d0
 		move.b	(v_zone).w,d0
 		lsl.w	#4,d0
@@ -4087,140 +4090,56 @@ MainLevelLoadBlock:
 		move.l	a2,-(sp)
 		addq.l	#4,a2
 		movea.l	(a2)+,a0
-		tst.b	(v_zone).w
-		beq.s	MainLevelLoadBlock_Convert16
-		bra.s	MainLevelLoadBlock_Convert16
-; ---------------------------------------------------------------------------
-
-MainLevelLoadBlock_Skip16Convert:			; leftover from a previous build
-		lea	(v_16x16).w,a1
-		move.w	#make_art_tile(ArtTile_Level,0,0),d0
-		bsr.w	EniDec
-		bra.s	loc_72C2
-; ---------------------------------------------------------------------------
-
-MainLevelLoadBlock_Convert16:
-		lea	(v_16x16).w,a1
-		move.w	#bytesToWcnt(v_16x16_end-v_16x16),d2
-
-MainLevelLoadBlock_ConvertLoop:
-		move.w	(a0)+,d0
-		tst.w	(Two_player_mode).w
-		beq.s	MainLevelLoadBlock_Not2p
-		move.w	d0,d1
-		andi.w	#nontile_mask,d0
-		andi.w	#tile_mask,d1
-		lsr.w	#1,d1
-		or.w	d1,d0
-
-MainLevelLoadBlock_Not2p:
-		move.w	d0,(a1)+
-		dbf	d2,MainLevelLoadBlock_ConvertLoop
-
-loc_72C2:
-		cmpi.b	#id_HTZ,(v_zone).w
-		bne.s	loc_72F4
-		lea	(v_16x16+$980).w,a1
-		lea	(Map16_HTZ).l,a0
-	if FixBugs
-		move.w	#bytesToWcnt(Map16_HTZ_End-Map16_HTZ),d2
-	else
-		; There is a slight bug here in which 50 bytes are copied from the start of Nem_HTZ.
-		move.w	#bytesToWcnt(Map16_HTZ_End+$50-Map16_HTZ),d2
-	endif
-
-loc_72D8:
-		move.w	(a0)+,d0
-		tst.w	(Two_player_mode).w
-		beq.s	loc_72EE
-		move.w	d0,d1
-		andi.w	#nontile_mask,d0
-		andi.w	#tile_mask,d1
-		lsr.w	#1,d1
-		or.w	d1,d0
-
-loc_72EE:
-		move.w	d0,(a1)+
-		dbf	d2,loc_72D8
-
-loc_72F4:
-		movea.l	(a2)+,a0
-		; What follows is a very C style compare code for zones that aren't GHZ, LZ, or EndZ.
-		; This works well in-game, except for LZ which uses the same data as CPZ.
-		; What this could point to is that at some point, LZ used compressed chunks similar to that of GHZ.
-		; However, instead it tries to decompress chunks that are already uncompressed to begin with.
-
-		; This could also be entirely rewritten so that EndZ is compared first, and if equal, then branch to the decompression routine.
-		; Then it could follow up with a check to see if the zone is greater than or equal to CPZ, simplifying the following compares into
-		; just two compares.
-
-	if FixBugs
-		; Fixes the bug described above, resulting in a graphical mess for LZ.
-		cmpi.b	#id_LZ,(v_zone).w
-		beq.s	loc_7338
-	endif
-		cmpi.b	#id_CPZ,(v_zone).w
-		beq.s	loc_7338
-		cmpi.b	#id_EHZ,(v_zone).w
-		beq.s	loc_7338
-		cmpi.b	#id_HPZ,(v_zone).w
-		beq.s	loc_7338
-		cmpi.b	#id_HTZ,(v_zone).w
-		beq.s	loc_7338
-		move.l	a2,-(sp)
-		moveq	#0,d1
-		moveq	#0,d2
-		move.w	(a0)+,d0
-		lea	(a0,d0.w),a1
-		lea	(v_128x128).l,a2
-		lea	(v_128x128_end).w,a3
-
-loc_732C:
+		lea	(v_16x16).w,a1	; RAM address for 16x16 mappings
 		bsr.w	KosDec
-		tst.w	d0
-		bmi.s	loc_732C
-		movea.l	(sp)+,a2
-		bra.s	loc_7348
-; ---------------------------------------------------------------------------
+		tst.w	(Two_player_mode).w
+		beq.s	LevelDataLoad2
+		; In 2P mode, adjust the block table to halve the pattern index on each block
+		lea	(v_16x16).w,a1
 
-loc_7338:
-		lea	(v_128x128).l,a1
-		move.w	#bytesToWcnt(v_128x128_end-v_128x128_def),d0
+		move.w	#bytesToWcnt(v_16x16_end-v_16x16),d2
+-		move.w	(a1),d0		; read an entry
+		move.w	d0,d1
+		andi.w	#$F800,d0	; filter for upper five bits
+		andi.w	#$7FF,d1	; filter for lower eleven bits (patternIndex)
+		lsr.w	#1,d1		; halve the pattern index
+		or.w	d1,d0		; put the parts back together
+		move.w	d0,(a1)+	; change the entry with the adjusted value
+		dbf	d2,-
 
-loc_7342:
-		move.w	(a0)+,(a1)+
-		dbf	d0,loc_7342
-
-loc_7348:
+LevelDataLoad2:
+		movea.l	(a2)+,a0
+		lea	(v_128x128).l,a1	; RAM address for 128x128 mappings
+		bsr.w	KosDec
 		bsr.w	LevelLayoutLoad
 		move.w	(a2)+,d0
 		move.w	(a2),d0
 		andi.w	#$FF,d0
-		cmpi.w	#(id_LZ<<8)+3,(v_zone).w
-		bne.s	loc_735E
-		moveq	#palid_SBZ3,d0
+;		cmpi.w	#$103,(v_zone).w	; is level SBZ3 (LZ4)?
+;		bne.s	.notSBZ3	; if not, branch
+;		moveq	#$C,d0	; use SB3 palette
 
-loc_735E:
-		cmpi.w	#(id_SBZ<<8)+1,(v_zone).w
-		beq.s	loc_736E
-		cmpi.w	#(id_SBZ<<8)+2,(v_zone).w
-		bne.s	loc_7370
+;.notSBZ3:
+;		cmpi.w	#$501,(v_zone).w	; is level SBZ2?
+;		beq.s	.isSBZorFZ	; if yes, branch
+;		cmpi.w	#$502,(v_zone).w	; is level FZ?
+;		bne.s	.normalpal	; if not, branch
 
-loc_736E:
-		moveq	#palid_HTZ2,d0
+;.isSBZorFZ:
+;		moveq	#$E,d0		; use SBZ2/FZ palette
 
-loc_7370:
-		bsr.w	PalLoad1
+;.normalpal:
+		bsr.w	PalLoad1		; load palette (based on d0)
 		movea.l	(sp)+,a2
-		addq.w	#4,a2
+		addq.w	#4,a2		; read number for 2nd PLC
 		moveq	#0,d0
 		move.b	(a2),d0
-		beq.s	locret_7382
-		bsr.w	LoadPLC
+		beq.s	.skipPLC	; if 2nd PLC is 0 (i.e. the ending sequence), branch
+		bsr.w	LoadPLC		; load pattern load cues
 
-locret_7382:
+.skipPLC:
 		rts
-; End of function MainLevelLoadBlock
+; End of function LevelDataLoad
 
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
@@ -16598,37 +16517,37 @@ Nem_Squirrel:	binclude	"art/nemesis/S1/Animal Squirrel.nem"
 ; ---------------------------------------------------------------------------
 ; Level Data
 ; ---------------------------------------------------------------------------
-Map16_EHZ:	binclude	"mappings/16x16/EHZ.unc"
+Map16_EHZ:	binclude	"mappings/16x16/EHZ.kos"
 Map16_EHZ_End:
 		even
 Nem_EHZ:binclude	"art/nemesis/8x8 - EHZ.nem"
 		even
-Map16_HTZ:	binclude	"mappings/16x16/HTZ.unc"
+Map16_HTZ:	binclude	"mappings/16x16/HTZ.kos"
 Map16_HTZ_End:
 		even
 Nem_HTZ:	binclude	"art/nemesis/8x8 - HTZ.nem"
 		even
 Nem_HTZ_AniPlaceholders:	binclude	"art/nemesis/HTZ Ani Placeholders.nem"
 		even
-Map128_EHZ:	binclude	"mappings/128x128/EHZ_HTZ.unc"
+Map128_EHZ:	binclude	"mappings/128x128/EHZ_HTZ.kos"
 		even
-Map16_HPZ:	binclude	"mappings/16x16/HPZ.unc"
+Map16_HPZ:	binclude	"mappings/16x16/HPZ.kos"
 Map16_HPZ_End:
 		even
 Nem_HPZ:binclude	"art/nemesis/8x8 - HPZ.nem"
 		even
-Map128_HPZ:	binclude	"mappings/128x128/HPZ.unc"
+Map128_HPZ:	binclude	"mappings/128x128/HPZ.kos"
 		even
-Map16_CPZ:	binclude	"mappings/16x16/CPZ.unc"
+Map16_CPZ:	binclude	"mappings/16x16/CPZ.kos"
 Map16_CPZ_End:
 		even
 Nem_CPZ:	binclude	"art/nemesis/8x8 - CPZ.nem"
 		even
 Nem_CPZ_Buildings:	binclude	"art/nemesis/CPZ Buildings.nem"
 		even
-Map128_CPZ:	binclude	"mappings/128x128/CPZ.unc"
+Map128_CPZ:	binclude	"mappings/128x128/CPZ.kos"
 		even
-Map16_GHZ:	binclude	"mappings/16x16/GHZ.unc"
+Map16_GHZ:	binclude	"mappings/16x16/GHZ.kos"
 Map16_GHZ_End:
 		even
 Nem_GHZ:	binclude	"art/nemesis/8x8 - GHZ.nem"
@@ -16637,7 +16556,7 @@ Nem_GHZ2:	binclude	"art/nemesis/8x8 - GHZ2.nem"
 		even
 ; Comparatively to the source compressors for KCC, this is one is better in size by 0.06%
 ; Maybe this could be from slightly after KCC was finalized? Who knows!
-Map128_GHZ:	binclude	"mappings/128x128/GHZ.kcc"
+Map128_GHZ:	binclude	"mappings/128x128/GHZ.kos"
 		even
 	if PaddingOptimization=0
 ; duplicate chunk end data from the above
