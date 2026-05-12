@@ -2744,7 +2744,7 @@ Level_NoMusicFade:
 		moveq	#0,d0
 		move.b	(v_zone).w,d0
 		lsl.w	#4,d0
-		lea	(LevelArtPointers).l,a2
+		lea	(LevelHeaders).l,a2
 		lea	(a2,d0.w),a2
 		moveq	#0,d0
 		move.b	(a2),d0
@@ -16046,7 +16046,6 @@ Art_LivesNums_PB:	binclude	"art/uncompressed/Lives Counter Numbers.bin"
 		even
 
 	phase $1C056
-		include	"leftovers/_inc/LevelHeaders.asm"
 		include	"leftovers/_inc/Pattern Load Cues.asm"
 
 		binclude	"leftovers/art/uncompressed/cut-off/1C318.bin"
@@ -16377,9 +16376,7 @@ Map128_CPZ:	binclude	"mappings/128x128/CPZ.kos"
 Map16_GHZ:	binclude	"mappings/16x16/GHZ.kos"
 Map16_GHZ_End:
 		even
-Nem_GHZ:	binclude	"art/nemesis/8x8 - GHZ.nem"
-		even
-Nem_GHZ2:	binclude	"art/nemesis/8x8 - GHZ2.nem"
+Nem_GHZ:	binclude	"art/nemesis/8x8 - GHZ (Combined).nem"
 		even
 ; Comparatively to the source compressors for KCC, this is one is better in size by 0.06%
 ; Maybe this could be from slightly after KCC was finalized? Who knows!
