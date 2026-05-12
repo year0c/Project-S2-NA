@@ -79,12 +79,10 @@ LevelLayoutLoad:
 		moveq	#2,d1				; Index into 'Off_Level' to get level background layout.
 
 .loadlayout:
+		moveq	#0,d0
 		move.w	(v_zone).w,d0
-		lsl.b	#6,d0
+		ror.b	#1,d0
 		lsr.w	#5,d0
-		move.w	d0,d2
-		add.w	d0,d0
-		add.w	d2,d0
 		add.w	d1,d0
 		lea	(Level_Index).l,a1
 		move.w	(a1,d0.w),d0
