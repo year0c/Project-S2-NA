@@ -2887,7 +2887,7 @@ Level_SkipTtlCard:
 		jsr	(LoadAnimatedBlocks).l
 		bsr.w	LoadTilesFromStart
 		jsr	(ConvertCollisionArray).l
-		bsr.w	LoadCollisionIndexes
+		bsr.w	ColIndexLoad
 		bsr.w	WaterEffects
 		move.b	#id_Obj01,(v_player).w	; load Sonic object
 		tst.w	(f_demo).w	; are we on an ending demo?
@@ -3105,59 +3105,37 @@ loc_400E:
 
 ; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
 
-; ColIndexLoad:
-LoadCollisionIndexes:
-		moveq	#0,d0
-		move.b	(v_zone).w,d0
-		lsl.w	#2,d0
-		move.l	#v_collision1,(v_collindex).w
-		movea.l	ColP_Index(pc,d0.w),a1
-		lea	(v_collision1).w,a2
-		bsr.s	Col_Load
-		movea.l	ColS_Index(pc,d0.w),a1
-		lea	(v_collision2).w,a2
+ColIndexLoad:
+		moveq	#0,d0				; clear d0
+		move.b	(v_zone).w,d0			; get current zone ID
+		lsl.w	#3,d0				; MJ: multiply by 8 not 4
+		move.w	#v_collision1,(v_collindex).w	; set base location for collision index
+		move.w	d0,-(sp)			; backup Zone ID
+		movea.l	ColPointers(pc,d0.w),a0		; MJ: get first collision set
+		lea	(v_collision1).w,a1		; set target buffer for collision data 1
+		bsr.w	KosDec				; decompress collision data 1
 
-Col_Load:
-		move.w	#bytesToWcnt(v_collision1_end-v_collision1),d1
-		moveq	#0,d2
+		move.w	(sp)+,d0			; restore zone ID
+		movea.l	ColPointers+4(pc,d0.w),a0	; MJ: get second collision set
+		lea	(v_collision2).w,a1		; set target buffer for collision data 2
+		bra.w	KosDec				; decompress collision data 2
+; End of function ColIndexLoad
 
-.loop:
-		move.b	(a1)+,d2	; move low byte of collision address to d2
-		move.w	d2,(a2)+	; and then move the high byte of d2 to collision RAM address
-		dbf	d1,.loop
-		rts
-; End of function Col_Load
-
-; ===========================================================================
 ; ---------------------------------------------------------------------------
-; Pointers to primary collision indexes
-
-; Contains an array of pointers to the primary collision index data for each
-; level. 1 pointer for each level, pointing the primary collision index.
+; Collision index pointers
 ; ---------------------------------------------------------------------------
-ColP_Index:	dc.l ColP_GHZ
+ColPointers:	dc.l ColP_GHZ	; MJ: each zone now has two entries
+		dc.l ColS_GHZ
 		dc.l ColP_CPZ
+		dc.l ColS_CPZ
 		dc.l ColP_CPZ
+		dc.l ColS_CPZ
 		dc.l ColP_EHZ
+		dc.l ColS_EHZ
 		dc.l ColP_HPZ
-		dc.l ColP_EHZ
-		;dc.l ColP_GHZ				; pointer for Ending is missing by default.
-
-; ---------------------------------------------------------------------------
-; Pointers to secondary collision indexes
-
-; Contains an array of pointers to the secondary collision index data for
-; each level. 1 pointer for each level, pointing the secondary collision
-; index.
-; ---------------------------------------------------------------------------
-ColS_Index:	dc.l ColS_GHZ
-		dc.l ColS_CPZ
-		dc.l ColS_CPZ
-		dc.l ColS_EHZ
 		dc.l ColS_HPZ
+		dc.l ColP_EHZ
 		dc.l ColS_EHZ
-		;dc.l ColS_GHZ				; pointer for Ending is missing by default.
-
 		include	"_inc/Oscillatory Routines.asm"
 
 ; =============== S U B	R O U T	I N E =======================================
@@ -9921,93 +9899,97 @@ ConvRowColBlocks	= CollArray1
 
 ; return_1EAF0: FloorLog_Unk:
 ConvertCollisionArray:
-	rts
+		rts
 ; ---------------------------------------------------------------------------
-	; The raw format stores the collision data column by column for the normal collision array.
-	; This makes a copy of the data, but stored row by row, for the rotated collision array.
-	lea	(RawColBlocks).l,a1	; Source location of raw collision block data
-	lea	(ConvRowColBlocks).l,a2	; Destinatation location for row-converted collision block data
+		; The raw format stores the collision data column by column for the normal collision array.
+		; This makes a copy of the data, but stored row by row, for the rotated collision array.
+		lea	(RawColBlocks).l,a1	; Source location of raw collision block data
+		lea	(ConvRowColBlocks).l,a2	; Destinatation location for row-converted collision block data
 
-	move.w	#$100-1,d3	; Number of blocks in collision data
+		move.w	#$100-1,d3	; Number of blocks in collision data
 .blockLoop:
-	moveq	#16,d5		; Start on the 16th bit (the leftmost pixel)
+		moveq	#16,d5		; Start on the 16th bit (the leftmost pixel)
+		move.w	#16-1,d2	; Width of a block in pixels
 
-	move.w	#16-1,d2	; Width of a block in pixels
 .columnLoop:
-	moveq	#0,d4
+		moveq	#0,d4
+		move.w	#16-1,d1	; Height of a block in pixels
 
-	move.w	#16-1,d1	; Height of a block in pixels
 .rowLoop:
-	move.w	(a1)+,d0	; Get row of collision bits
-	lsr.l	d5,d0		; Push the selected bit of this row into the 'eXtend' flag
-	addx.w	d4,d4		; Shift d4 to the left, and insert the selected bit into bit 0
-	dbf	d1,.rowLoop	; Loop for each row of pixels in a block
+		move.w	(a1)+,d0	; Get row of collision bits
+		lsr.l	d5,d0		; Push the selected bit of this row into the 'eXtend' flag
+		addx.w	d4,d4		; Shift d4 to the left, and insert the selected bit into bit 0
+		dbf	d1,.rowLoop	; Loop for each row of pixels in a block
 
-	move.w	d4,(a2)+	; Store column of collision bits
-	suba.w	#2*16,a1	; Back to the start of the block
-	subq.w	#1,d5		; Get next bit in the row
-	dbf	d2,.columnLoop	; Loop for each column of pixels in a block
+		move.w	d4,(a2)+	; Store column of collision bits
+		suba.w	#2*16,a1	; Back to the start of the block
+		subq.w	#1,d5		; Get next bit in the row
+		dbf	d2,.columnLoop	; Loop for each column of pixels in a block
 
-	adda.w	#2*16,a1	; Next block
-	dbf	d3,.blockLoop	; Loop for each block in the raw collision block data
+		adda.w	#2*16,a1	; Next block
+		dbf	d3,.blockLoop	; Loop for each block in the raw collision block data
 
-	; This then converts the collision data into the final collision arrays
-	lea	(ConvRowColBlocks).l,a1
-	lea	(CollArray1).l,a2	; Convert the row-converted collision block data into final rotated collision array
-	bsr.s	.convertArrayToStandardFormat
-	lea	(RawColBlocks).l,a1
-	lea	(CollArray2).l,a2		; Convert the raw collision block data into final normal collision array
+		; This then converts the collision data into the final collision arrays
+		lea	(ConvRowColBlocks).l,a1
+		lea	(CollArray1).l,a2	; Convert the row-converted collision block data into final rotated collision array
+		bsr.s	.convertArrayToStandardFormat
+		lea	(RawColBlocks).l,a1
+		lea	(CollArray2).l,a2		; Convert the raw collision block data into final normal collision array
 
 ; loc_1EB46: FloorLog_Unk2:
 .convertArrayToStandardFormat:
-	move.w	#$1000-1,d3	; Size of the collision array
+		move.w	#$1000-1,d3	; Size of the collision array
 
 .processCollisionArrayLoop:
-	moveq	#0,d2
-	move.w	#$F,d1
-	move.w	(a1)+,d0	; Get current column of collision pixels
-	beq.s	.noCollision	; Branch if there's no collision in this column
-	bmi.s	.topPixelSolid	; Branch if top pixel of collision is solid
+		moveq	#0,d2
+		move.w	#$F,d1
+		move.w	(a1)+,d0	; Get current column of collision pixels
+		beq.s	.noCollision	; Branch if there's no collision in this column
+		bmi.s	.topPixelSolid	; Branch if top pixel of collision is solid
 
-	; Here we count, starting from the bottom, how many pixels tall
-	; the collision in this column is.
+		; Here we count, starting from the bottom, how many pixels tall
+		; the collision in this column is.
+
 .processColumnLoop1:
-	lsr.w	#1,d0
-	bcc.s	.pixelNotSolid1
-	addq.b	#1,d2
-.pixelNotSolid1:
-	dbf	d1,.processColumnLoop1
+		lsr.w	#1,d0
+		bcc.s	.pixelNotSolid1
+		addq.b	#1,d2
 
-	bra.s	.columnProcessed
+.pixelNotSolid1:
+		dbf	d1,.processColumnLoop1
+		bra.s	.columnProcessed
+
 ; ===========================================================================
 .topPixelSolid:
-	cmpi.w	#$FFFF,d0		; Is entire column solid?
-	beq.s	.entireColumnSolid	; Branch if so
+		cmpi.w	#$FFFF,d0		; Is entire column solid?
+		beq.s	.entireColumnSolid	; Branch if so
 
-	; Here we count, starting from the top, how many pixels tall
-	; the collision in this column is (the resulting number is negative).
+		; Here we count, starting from the top, how many pixels tall
+		; the collision in this column is (the resulting number is negative).
+
 .processColumnLoop2:
-	lsl.w	#1,d0
-	bcc.s	.pixelNotSolid2
-	subq.b	#1,d2
-.pixelNotSolid2:
-	dbf	d1,.processColumnLoop2
+		lsl.w	#1,d0
+		bcc.s	.pixelNotSolid2
+		subq.b	#1,d2
 
-	bra.s	.columnProcessed
+.pixelNotSolid2:
+		dbf	d1,.processColumnLoop2
+		bra.s	.columnProcessed
+
 ; ===========================================================================
 .entireColumnSolid:
-	move.w	#16,d0
+		move.w	#16,d0
 
 ; loc_1EB78:
 .noCollision:
-	move.w	d0,d2
+		move.w	d0,d2
 
 ; loc_1EB7A:
 .columnProcessed:
-	move.b	d2,(a2)+	; Store column collision height
-	dbf	d3,.processCollisionArrayLoop
+		move.b	d2,(a2)+	; Store column collision height
+		dbf	d3,.processCollisionArrayLoop
 
-	rts
+		rts
 
 ; End of function ConvertCollisionArray
 
@@ -12921,30 +12903,30 @@ Art_LivesNums:	binclude	"art/uncompressed/Lives Counter Numbers.bin"
 ; ---------------------------------------------------------------------------
 ; Collision data
 ; ---------------------------------------------------------------------------
-AngleMap:	binclude	"collision/Curve and resistance mapping.bin"
+AngleMap:	binclude	"collision/misc/Curve and resistance mapping.bin"
 AngleMap_End:
 		even
-CollArray1:	binclude	"collision/Collision array 1.bin"
+CollArray1:	binclude	"collision/misc/Collision array - Vertical.bin"
 CollArray1_End:
 		even
-CollArray2:	binclude	"collision/Collision array 2.bin"
+CollArray2:	binclude	"collision/misc/Collision array - Horizontal.bin"
 CollArray2_End:
 		even
-ColP_GHZ:	binclude	"collision/S1/GHZ1.unc"
+ColP_GHZ:	binclude	"collision/GHZ1.kos"
 		even
-ColS_GHZ:	binclude	"collision/S1/GHZ2.unc"
+ColS_GHZ:	binclude	"collision/GHZ2.kos"
 		even
-ColP_EHZ:	binclude	"collision/EHZ primary 16x16 collision index.bin"
+ColP_EHZ:	binclude	"collision/EHZ and HTZ primary 16x16 collision index.kos"
 		even
-ColS_EHZ:	binclude	"collision/EHZ secondary 16x16 collision index.bin"
+ColS_EHZ:	binclude	"collision/EHZ and HTZ secondary 16x16 collision index.kos"
 		even
-ColP_CPZ:	binclude	"collision/CPZ primary 16x16 collision index.bin"
+ColP_CPZ:	binclude	"collision/CPZ primary 16x16 collision index.kos"
 		even
-ColS_CPZ:	binclude	"collision/CPZ secondary 16x16 collision index.bin"
+ColS_CPZ:	binclude	"collision/CPZ secondary 16x16 collision index.kos"
 		even
-ColP_HPZ:	binclude	"collision/HPZ primary 16x16 collision index.bin"
+ColP_HPZ:	binclude	"collision/HPZ primary 16x16 collision index.kos"
 		even
-ColS_HPZ:	binclude	"collision/HPZ secondary 16x16 collision index.bin"
+ColS_HPZ:	binclude	"collision/HPZ secondary 16x16 collision index.kos"
 		even
 
 ; ---------------------------------------------------------------------------
