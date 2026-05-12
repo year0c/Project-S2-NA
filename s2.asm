@@ -10099,7 +10099,7 @@ Map_obj08:	include	"mappings/sprite/obj08.asm"
 ApplySonic1Collision:
 		rts
 ; ---------------------------------------------------------------------------
-		lea	(CollArray1_S1).l,a1
+		lea	(CollArray1).l,a1
 		tst.b	(v_zone).w
 		beq.s	loc_13038
 		lea	(CollArray1).l,a1
@@ -10117,7 +10117,7 @@ loc_13042:
 loc_13052:
 		move.w	(a1)+,(a2)+
 		dbf	d1,loc_13052
-		lea	(AngleMap_S1).l,a1
+		lea	(AngleMap).l,a1
 		tst.b	(v_zone).w
 		beq.s	loc_1306A
 		lea	(AngleMap).l,a1
@@ -13042,17 +13042,8 @@ Art_LivesNums:	binclude	"art/uncompressed/Lives Counter Numbers.bin"
 ; ---------------------------------------------------------------------------
 ; Collision data
 ; ---------------------------------------------------------------------------
-AngleMap_S1:	binclude	"collision/S1/Angle Map.bin"
-AngleMap_S1_End:
-		even
 AngleMap:	binclude	"collision/S1/Angle Map.bin"
 AngleMap_End:
-		even
-CollArray1_S1:	binclude	"collision/S1/Collision Array (Normal).bin"
-CollArray1_S1_End:
-		even
-CollArray2_S1:	binclude	"collision/S1/Collision Array (Rotated).bin"
-CollArray2_S1_End:
 		even
 CollArray1:	binclude	"collision/S1/Collision Array (Normal).bin"
 CollArray1_End:
